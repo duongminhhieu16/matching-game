@@ -9,7 +9,7 @@ public class Board : MonoBehaviour
 {
     public int dimension = 10;
     public List<Sprite> sprites = new List<Sprite>();
-    public float distance = 1.0f;
+    public float distance = 0.6f;
     public GameObject tilePrefab;
     private GameObject[,] allTiles;
 

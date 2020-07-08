@@ -25,4 +25,8 @@ public class Pause : MonoBehaviour
     {
         SceneManager.LoadScene(0);
     }
+    public void nextLevel()
+    {
+        SceneManager.LoadScene(1);
+    }
 }
