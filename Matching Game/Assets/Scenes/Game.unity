@@ -410,7 +410,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 5.5
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -937,7 +937,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 08d94a4f99dad7a4eb5ab43417af8915, type: 3}
   - {fileID: 21300000, guid: 21fbbe854015d824586e40698bf56c41, type: 3}
   - {fileID: 21300000, guid: 6676ac699aa74684da56e4746a23fe43, type: 3}
-  distance: 0.6
+  distance: 1
   tilePrefab: {fileID: 6916783849839029056, guid: a900cf84222d4984da58f403343b2da7,
     type: 3}
 --- !u!114 &1278880702

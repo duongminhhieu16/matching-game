@@ -1,18 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class Board : MonoBehaviour
 {
     public int dimension = 10;
     public List<Sprite> sprites = new List<Sprite>();
-    public float distance = 0.6f;
+    public float distance = 1.0f;
     public GameObject tilePrefab;
     private GameObject[,] allTiles;
-
+ 
     // Start is called before the first frame update
     void Start()
     {
@@ -29,9 +27,7 @@ public class Board : MonoBehaviour
             {
                 GameObject newTile = Instantiate(tilePrefab);
                 SpriteRenderer renderer = newTile.GetComponent<SpriteRenderer>();
-                
                 int num = rand.Next(5);
-                Debug.Log(num);
                 renderer.sprite = sprites[num];
                 newTile.transform.parent = transform;
                 newTile.transform.position = new Vector3(i * distance, j * distance, 0) + offset;
