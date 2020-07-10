@@ -13,6 +13,7 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;
     private bool oneMoveAtleast = false;
     private GameObject[,] allTiles;
+    private HashSet<SpriteRenderer> matchedTiles;
 
     public int startingMoves;
     private int _numMoves;
@@ -49,7 +50,7 @@ public class Board : MonoBehaviour
 
     public static Board Instance { get; private set; }
 
-    private void Awake()
+    void Awake()
     {
         Instance = this;
         Score = 0;
@@ -59,50 +60,50 @@ public class Board : MonoBehaviour
     void Start()
     {
         allTiles = new GameObject[dimension, dimension];
+        oneMoveAtleast = false;
         SetUp();
     }
 
     private void SetUp()
     {
-        
-        Vector3 offset = transform.position - new Vector3(dimension * distance / 2.0f, 0);
+        Vector3 offset = transform.position - new Vector3(dimension * distance / 2.0f, dimension * distance / 2.0f, 0);
         System.Random rand = new System.Random();
-        oneMoveAtleast = false;
+        do {
             for (int i = 0; i < dimension; i++)
             {
                 for (int j = 0; j < dimension; j++)
                 {
                     GameObject newTile = Instantiate(tilePrefab);
                     List<Sprite> possibleSprites = new List<Sprite>(sprites);
-                    
-                    Sprite left1 = GetSpriteAt(i - 1, j);
-                    Sprite left2 = GetSpriteAt(i - 2, j);
+
+                    Sprite left1 = GetSpriteAt(j-1, i);
+                    Sprite left2 = GetSpriteAt(j-2, i);
                     if (left1 != null && left1 == left2)
                     {
                         possibleSprites.Remove(left1);
                     }
 
-                    Sprite down1 = GetSpriteAt(i, j - 1);
-                    Sprite down2 = GetSpriteAt(i, j - 2);
+                    Sprite down1 = GetSpriteAt(j, i-1);
+                    Sprite down2 = GetSpriteAt(j, i-2);
                     if (down1 != null && down1 == down2)
                     {
                         possibleSprites.Remove(down1);
                     }
 
                     SpriteRenderer renderer = newTile.GetComponent<SpriteRenderer>();
-                    
+
                     int num = rand.Next(possibleSprites.Count);
                     renderer.sprite = possibleSprites[num];
 
                     Tile tile = newTile.AddComponent<Tile>();
-                    tile.position = new Vector2Int(i, j);
+                    tile.position = new Vector2Int(j, i);
 
                     newTile.transform.parent = transform;
-                    newTile.transform.position = new Vector3(i * distance, j * distance, 0) + offset;
-                    allTiles[i, j] = newTile;
+                    newTile.transform.position = new Vector3(j * distance, i * distance, 0) + offset;
+                    allTiles[j, i] = newTile;
                 }
             }
-        
+        } while (!CheckOneMoveAtleast()) ;
     }
 
     private Sprite GetSpriteAt(int column, int row)
@@ -127,79 +128,20 @@ public class Board : MonoBehaviour
         return renderer;
     }
 
-    private List <SpriteRenderer> FindVerticalMatchesForTile(int column, int row, Sprite sprite)
+    public void SwapTiles(Vector2Int tile1Position, Vector2Int tile2Position)
     {
-        List<SpriteRenderer> matches = new List<SpriteRenderer>();
-        for(int i = row + 1; i < dimension; i++)
-        {
-            SpriteRenderer nextRow = GetSpriteRendererAt(column, i);
-            if(nextRow.sprite != sprite)
-            {
-                break;
-            }
-            matches.Add(nextRow);
-        }
-        return matches;
-    }
-
-    private List<SpriteRenderer> FindHorizontalMatchesForTile(int column, int row, Sprite sprite)
-    {
-        List<SpriteRenderer> matches = new List<SpriteRenderer>();
-        for (int i = column + 1; i < dimension; i++)
-        {
-            SpriteRenderer nextColumn = GetSpriteRendererAt(i, row);
-            if (nextColumn.sprite != sprite)
-            {
-                break;
-            }
-            matches.Add(nextColumn);
-        }
-        return matches; 
-    }
-
-    private bool CheckMatches()
-    {
-        HashSet<SpriteRenderer> matchedTiles = new HashSet<SpriteRenderer>();
-        for (int i = 0; i < dimension; i++)
-        {
-            for (int j = 0; j < dimension; j++)
-            {
-                SpriteRenderer current = GetSpriteRendererAt(i, j);
-                List<SpriteRenderer> rowMatches = FindHorizontalMatchesForTile(i, j, current.sprite);
-                List<SpriteRenderer> columnMatches = FindVerticalMatchesForTile(i, j, current.sprite);
-                if (rowMatches.Count >= 2)
-                {
-                    matchedTiles.UnionWith(rowMatches);
-                    matchedTiles.Add(current);
-                }
-                if (columnMatches.Count >= 2)
-                {
-                    matchedTiles.UnionWith(columnMatches);
-                    matchedTiles.Add(current);
-                }
-            }
-        }
-        foreach (SpriteRenderer renderer in matchedTiles)
-        {
-            renderer.sprite = null;
-        }
-        return matchedTiles.Count > 0;
-    }
-
-    public void SwapTiles(Vector2Int tiles1Position, Vector2Int tiles2Position)
-    {
-        GameObject tile1 = allTiles[tiles1Position.x, tiles1Position.y];
+        GameObject tile1 = allTiles[tile1Position.x, tile1Position.y];
         SpriteRenderer renderer1 = tile1.GetComponent<SpriteRenderer>();
-        GameObject tile2 = allTiles[tiles2Position.x, tiles2Position.y];
+
+        GameObject tile2 = allTiles[tile2Position.x, tile2Position.y];
         SpriteRenderer renderer2 = tile2.GetComponent<SpriteRenderer>();
-        
+
         Sprite temp = renderer1.sprite;
         renderer1.sprite = renderer2.sprite;
         renderer2.sprite = temp;
 
-        oneMoveAtleast = CheckMatches();
-        Debug.Log(oneMoveAtleast);
-        if(!oneMoveAtleast)
+        bool changesOccurs = CheckMatchesAllPosition();
+        if (!changesOccurs)
         {
             temp = renderer1.sprite;
             renderer1.sprite = renderer2.sprite;
@@ -207,17 +149,75 @@ public class Board : MonoBehaviour
         }
         else
         {
-            numMoves--;
+            
             do
             {
+                foreach (SpriteRenderer renderer in matchedTiles)
+                {
+                    renderer.sprite = null;
+                }
                 FillHoles();
-            } while (CheckMatches());
-            if(numMoves <= 0)
+            } while (CheckMatchesAllPosition());
+            
+        }
+    }
+
+    bool CheckMatchesAllPosition()
+    {
+        matchedTiles = new HashSet<SpriteRenderer>();
+        for (int row = 0; row < dimension; row++)
+        {
+            for (int column = 0; column < dimension; column++)
             {
-                numMoves = 0;
-                SceneManager.LoadScene(3);
+                SpriteRenderer current = GetSpriteRendererAt(column, row);
+
+                List<SpriteRenderer> horizontalMatches = FindColumnMatchForTile(column, row, current.sprite);
+                if (horizontalMatches.Count >= 2)
+                {
+                    matchedTiles.UnionWith(horizontalMatches);
+                    matchedTiles.Add(current);
+                }
+
+                List<SpriteRenderer> verticalMatches = FindRowMatchForTile(column, row, current.sprite);
+                if (verticalMatches.Count >= 2)
+                {
+                    matchedTiles.UnionWith(verticalMatches);
+                    matchedTiles.Add(current);
+                }
             }
         }
+        Score += matchedTiles.Count;
+        return matchedTiles.Count > 0;
+    }
+
+    List<SpriteRenderer> FindColumnMatchForTile(int col, int row, Sprite sprite)
+    {
+        List<SpriteRenderer> result = new List<SpriteRenderer>();
+        for (int i = col + 1; i < dimension; i++)
+        {
+            SpriteRenderer nextColumn = GetSpriteRendererAt(i, row);
+            if (nextColumn.sprite != sprite)
+            {
+                break;
+            }
+            result.Add(nextColumn);
+        }
+        return result;
+    }
+
+    List<SpriteRenderer> FindRowMatchForTile(int col, int row, Sprite sprite)
+    {
+        List<SpriteRenderer> result = new List<SpriteRenderer>();
+        for (int i = row + 1; i < dimension; i++)
+        {
+            SpriteRenderer nextRow = GetSpriteRendererAt(col, i);
+            if (nextRow.sprite != sprite)
+            {
+                break;
+            }
+            result.Add(nextRow);
+        }
+        return result;
     }
 
     private bool CheckOneMoveAtleast()
@@ -226,37 +226,36 @@ public class Board : MonoBehaviour
         {
             for (int j = 0; j < dimension; j++)
             {
-                GameObject tile = allTiles[i, j];
-                SpriteRenderer tileRenderer = tile.GetComponent<SpriteRenderer>();
-                Vector2Int tilePosition = new Vector2Int(i, j);
-                if (j < dimension - 1)
-                {
-                    GameObject nextRowTile = allTiles[i, j + 1];
-                    SpriteRenderer nextRowTileRenderer = nextRowTile.GetComponent<SpriteRenderer>();
-                    Vector2Int nextRowTilePosition = new Vector2Int(i, j + 1);
-                    SwapTiles(tilePosition, nextRowTilePosition);
-                    if (oneMoveAtleast)
-                    {
-                        Sprite temp = tileRenderer.sprite;
-                        tileRenderer.sprite = nextRowTileRenderer.sprite;
-                        nextRowTileRenderer.sprite = temp;
-                        return oneMoveAtleast;
-                    }
-                }
-                if(i < dimension - 1)
-                {
-                    GameObject nextColumnTile = allTiles[i + 1, j];
-                    SpriteRenderer nextColumnTileRenderer = nextColumnTile.GetComponent<SpriteRenderer>();
-                    Vector2Int nextColumnTilePosition = new Vector2Int(i + 1, j);
-                    SwapTiles(tilePosition, nextColumnTilePosition);
-                    if (oneMoveAtleast)
-                    {
-                        Sprite temp = tileRenderer.sprite;
-                        tileRenderer.sprite = nextColumnTileRenderer.sprite;
-                        nextColumnTileRenderer.sprite = temp;
-                        return oneMoveAtleast;
-                    }
-                }
+                GameObject tile1 = allTiles[i, j];
+                SpriteRenderer renderer1 = tile1.GetComponent<SpriteRenderer>();
+                GameObject tileNextRow = allTiles[i + 1, j];
+                SpriteRenderer rendererNextRow = tileNextRow.GetComponent<SpriteRenderer>();
+                GameObject tileNextColumn = allTiles[i, j + 1];
+                SpriteRenderer rendererNextColumn = tileNextColumn.GetComponent<SpriteRenderer>();
+
+                Sprite temp = renderer1.sprite;
+                renderer1.sprite = rendererNextRow.sprite;
+                rendererNextRow.sprite = temp;
+
+                bool match = CheckMatchesAllPosition();
+                if (match) oneMoveAtleast = match;
+
+                temp = renderer1.sprite;
+                renderer1.sprite = rendererNextRow.sprite;
+                rendererNextRow.sprite = temp;
+                if (oneMoveAtleast) return oneMoveAtleast;
+
+                temp = renderer1.sprite;
+                renderer1.sprite = rendererNextColumn.sprite;
+                rendererNextColumn.sprite = temp;
+
+                match = CheckMatchesAllPosition();
+                if (match) oneMoveAtleast = match;
+
+                temp = renderer1.sprite;
+                renderer1.sprite = rendererNextColumn.sprite;
+                rendererNextColumn.sprite = temp;
+                if (oneMoveAtleast) return oneMoveAtleast;
             }
         }
         return oneMoveAtleast; 
@@ -264,29 +263,24 @@ public class Board : MonoBehaviour
 
     void FillHoles()
     {
-        for (int i = 0; i < dimension; i++)
+        for (int column = 0; column < dimension; column++)
         {
-            for (int j = 0; j < dimension; j++)
+            for (int row = 0; row < dimension; row++)
             {
-                while (GetSpriteRendererAt(i, j).sprite == null)
+                System.Random rand = new System.Random();
+                while (GetSpriteRendererAt(column, row).sprite == null)
                 {
-                    System.Random rand = new System.Random();
-                    for (int k = j; k < dimension - 1; k++)
+                    SpriteRenderer current = GetSpriteRendererAt(column, row);
+                    SpriteRenderer next = current;
+                    for (int i = row; i < dimension - 1; i++)
                     {
-                        SpriteRenderer current = GetSpriteRendererAt(i, k);
-                        SpriteRenderer next = GetSpriteRendererAt(i, k + 1);
+                        next = GetSpriteRendererAt(column, i + 1);
                         current.sprite = next.sprite;
+                        current = next;
                     }
-                    SpriteRenderer last = GetSpriteRendererAt(i, dimension - 1);
-                    last.sprite = sprites[rand.Next(sprites.Count)];
+                    next.sprite = sprites[rand.Next(sprites.Count)];
                 }
             }
-        }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        }    
     }
 }

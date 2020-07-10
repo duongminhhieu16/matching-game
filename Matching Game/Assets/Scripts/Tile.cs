@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
@@ -26,9 +24,12 @@ public class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if(selected != null)
+        if (selected != null)
         {
-            if (selected == this) return;
+            if (selected == this)
+            {
+                return;
+            }
             selected.Unselect();
             if (Vector2Int.Distance(selected.position, position) == 1)
             {
@@ -47,10 +48,4 @@ public class Tile : MonoBehaviour
             Select();
         }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-}
+}   
