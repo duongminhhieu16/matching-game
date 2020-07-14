@@ -28,16 +28,20 @@ public class Tile : MonoBehaviour
         {
             if (selected == this)
             {
+                selected.Unselect();
+                selected = null;
                 return;
             }
-            selected.Unselect();
+            
             if (Vector2Int.Distance(selected.position, position) == 1)
             {
-                Board.Instance.SwapTiles(position, selected.position);
+                Board.Instance.DestroyIfCombo(position, selected.position);
+                selected.Unselect();
                 selected = null;
             }
             else
             {
+                selected.Unselect();
                 selected = this;
                 Select();
             }
