@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.SceneManagement;
-using System.Runtime.CompilerServices;
+using DG.Tweening;
 
 public class Board : MonoBehaviour
 {
@@ -14,25 +13,26 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;
     private GameObject[,] allTiles;
     private HashSet<SpriteRenderer> matchedTiles;
-    bool win = false;
+    public bool win = false;
 
-    public int startingMoves = 50;
-    private int _numMoves;
+    public int startingMoves;
+    private int remainingMoves;
 
     public TextMeshProUGUI movesText;
     public TextMeshProUGUI scoreText;
     private int _score;
+    public int goal;
 
     public int NumMoves
     {
         get
         {
-            return _numMoves;
+            return remainingMoves;
         }
         set
         {
-            _numMoves = value;
-           //movesText.text = _numMoves.ToString();
+            remainingMoves = value;
+           movesText.text = remainingMoves.ToString();
         }
     }
 
@@ -45,11 +45,12 @@ public class Board : MonoBehaviour
         set
         {
             _score = value;
-            //scoreText.text = _score.ToString();
+            scoreText.text = _score.ToString();
         }
     }
 
     public static Board Instance { get; private set; }
+
 
     void Awake()
     {
@@ -141,6 +142,7 @@ public class Board : MonoBehaviour
         Sprite temp = renderer1.sprite;
         renderer1.sprite = renderer2.sprite;
         renderer2.sprite = temp;
+        
         //SoundManager.Instance.PlaySound(SoundType.TypeMove);
     }
 
@@ -162,7 +164,8 @@ public class Board : MonoBehaviour
         if (changesOccurs)
         {
             SwapTiles(tile1Position, tile2Position);
-            
+            NumMoves--;
+            Score += matchedTiles.Count;
             do
             {
                 foreach (SpriteRenderer renderer in matchedTiles)
@@ -171,11 +174,21 @@ public class Board : MonoBehaviour
                 }
                 StartCoroutine(FillHoles());
             } while (CheckMatch());
-           /* if (NumMoves <= 0)
+            if (Score >= goal)
             {
-                NumMoves = 0;
-                GameOver() ;
-            }*/
+                win = true;
+                SceneManager.LoadScene(2);
+            }
+            else
+            {
+                if (NumMoves <= 0)
+                {
+                    NumMoves = 0;
+                    win = false;
+                    SceneManager.LoadScene(3);
+
+                }
+            }
         }
         /*if (!CheckOnePossibleMatchAtleast())
         {
@@ -183,7 +196,7 @@ public class Board : MonoBehaviour
             
             Start();
         }*/
-
+        
     }
 
     bool CheckMatch()
@@ -213,7 +226,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
-        Score += matchedTiles.Count;
+        
         return check;
     }
 

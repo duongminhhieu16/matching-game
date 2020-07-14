@@ -1,6 +1,4 @@
-﻿
-using TMPro;
-
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -9,6 +7,7 @@ public class GameOverManager : MonoBehaviour
     public GameObject HighScoreAlert;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI highScoreText;
+    
 
     private void OnEnable()
     {
