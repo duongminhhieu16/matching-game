@@ -7,21 +7,26 @@ using DG.Tweening;
 
 public class Board : MonoBehaviour
 {
-    public int dimension = 10;
+    private int dimension = 10;
     public List<Sprite> sprites = new List<Sprite>();
     public float distance = 1.0f;
     public GameObject tilePrefab;
     private GameObject[,] allTiles;
     private HashSet<SpriteRenderer> matchedTiles;
-    public bool win = false;
+    
+    public bool win;
 
-    public int startingMoves;
+    private int startingMoves = 15;
     private int remainingMoves;
 
     public TextMeshProUGUI movesText;
     public TextMeshProUGUI scoreText;
+    public TextMeshProUGUI goalText;
+    public TextMeshProUGUI highscoreText;
     private int _score;
-    public int goal;
+    private int _goal;
+    private int _highscore;
+
 
     public int NumMoves
     {
@@ -31,7 +36,7 @@ public class Board : MonoBehaviour
         }
         set
         {
-            remainingMoves = value;
+           remainingMoves = value;
            movesText.text = remainingMoves.ToString();
         }
     }
@@ -49,15 +54,43 @@ public class Board : MonoBehaviour
         }
     }
 
+    public int Goal
+    {
+        get
+        {
+            return _goal;
+        }
+        set
+        {
+            _goal = value;
+            goalText.text = _goal.ToString();
+        }
+    }
+
+    public int HighScore
+    {
+        get
+        {
+            return _highscore;
+        }
+        set
+        {
+            _highscore = value;
+            highscoreText.text = _highscore.ToString();
+        }
+    }
+
     public static Board Instance { get; private set; }
 
 
     void Awake()
     {
         Instance = this;
-        Score = 0;
+        int level = PlayerPrefs.GetInt("win");
+        Score = PlayerPrefs.GetInt("score");
         NumMoves = startingMoves;
-
+        Goal = level*100;
+        HighScore = PlayerPrefs.GetInt("highScore");
     }
     // Start is called before the first frame update
     void Start()
@@ -165,19 +198,21 @@ public class Board : MonoBehaviour
         {
             SwapTiles(tile1Position, tile2Position);
             NumMoves--;
-            Score += matchedTiles.Count;
+            int sum = 0;
             do
             {
                 foreach (SpriteRenderer renderer in matchedTiles)
                 {
                     renderer.sprite = null;
+                    sum++;
                 }
                 StartCoroutine(FillHoles());
             } while (CheckMatch());
-            if (Score >= goal)
+            Score += sum;
+            if (Score >= Goal)
             {
                 win = true;
-                SceneManager.LoadScene(2);
+                GameEnding();
             }
             else
             {
@@ -185,7 +220,7 @@ public class Board : MonoBehaviour
                 {
                     NumMoves = 0;
                     win = false;
-                    SceneManager.LoadScene(3);
+                    GameEnding();
 
                 }
             }
@@ -296,17 +331,37 @@ public class Board : MonoBehaviour
                         current = next;
                     }
                     next.sprite = sprites[rand.Next(sprites.Count)];
-                    //yield return new WaitForSeconds(0.03f);
                 }
             }
         }
         yield return null;
     }
-    void GameOver()
+
+    private void Update()
     {
-        Debug.Log("GAME OVER");
-        PlayerPrefs.SetInt("score", Score);
-        SceneManager.LoadScene(3);
+        if (Score > HighScore)
+        {
+            PlayerPrefs.SetInt("highScore", Score);
+            HighScore = Score;
+        }
+        highscoreText.text = HighScore.ToString();
+    }
+    private void GameEnding()
+    {
+        if (win)
+        {
+            Debug.Log("YOU WIN!!!");
+            PlayerPrefs.SetInt("win", PlayerPrefs.GetInt("win")+1);
+            PlayerPrefs.SetInt("score", Score);
+            SceneManager.LoadScene(2);
+        }
+        else
+        {
+            Debug.Log("YOU LOSE!!!!!!!!!!!!!!!!!!!!!!");
+            PlayerPrefs.SetInt("win", 1);
+            PlayerPrefs.SetInt("score", 0);
+            SceneManager.LoadScene(3);
+        }
         //SoundManager.Instance.PlaySound(SoundType.TypeGameOver);
     }
 }

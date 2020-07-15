@@ -2,17 +2,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameOverManager : MonoBehaviour
+public class ScoreManager : MonoBehaviour
 {
-    public GameObject HighScoreAlert;
-    public TextMeshProUGUI scoreText;
     public TextMeshProUGUI highScoreText;
-    
-
     private void OnEnable()
     {
         int score = PlayerPrefs.GetInt("score");
         int highScore;
+        
+        
         if (PlayerPrefs.HasKey("highScore"))
         {
             highScore = PlayerPrefs.GetInt("highScore");
@@ -25,20 +23,15 @@ public class GameOverManager : MonoBehaviour
         {
             PlayerPrefs.SetInt("highScore", score);
             highScoreText.text = score.ToString();
-            HighScoreAlert.SetActive(true);
         }
         else
         {
-            HighScoreAlert.SetActive(false);
             highScoreText.text = highScore.ToString();
         }
-        scoreText.text = score.ToString();
+        //if (nextLevel) PlayerPrefs.SetInt("score", score);
+        //else PlayerPrefs.SetInt("score", 0);
     }
 
-    public void RestartLevel()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-    }
 
     static void ResetHighScore()
     {
