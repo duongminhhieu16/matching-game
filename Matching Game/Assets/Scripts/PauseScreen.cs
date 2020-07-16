@@ -7,7 +7,7 @@ public class PauseScreen : MonoBehaviour
 {
     bool isPaused = false;
     
-    public void pauseGame()
+    public void PauseGame()
     {
         if (isPaused)
         {
@@ -21,11 +21,11 @@ public class PauseScreen : MonoBehaviour
         }
     }
 
-    public void backToMenu()
+    public void BackToMenu()
     {
         SceneManager.LoadScene(0);
     }
-    public void nextLevel()
+    public void NextLevel()
     {
         SceneManager.LoadScene(1);
     }

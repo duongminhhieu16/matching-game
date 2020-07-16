@@ -68,10 +68,10 @@ public class Tile : MonoBehaviour
         isRunning = true;
         while(isRunning)
         {
-            if (fraction < 1) fraction += speed;
+            fraction += speed;
             transform.position = Vector3.Lerp(prepos, pos, fraction);
-            if (fraction == 1) break;
-            yield return new WaitForEndOfFrame();
+            if (fraction == 1) isRunning = false;
+            yield return new WaitForSeconds(0.2f);
         }
         
     }

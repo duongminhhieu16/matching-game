@@ -27,6 +27,7 @@ public class Board : MonoBehaviour
     private int _score;
     private int _goal;
     private int _highscore;
+    [SerializeField] private int block = 10;
 
 
 
@@ -132,12 +133,14 @@ public class Board : MonoBehaviour
                 SpriteRenderer renderer = newTile.GetComponent<SpriteRenderer>();
 
                 int num = rand.Next(possibleSprites.Count);
+                if (num == 5) block--;
+                if (block < 0) num = rand.Next(possibleSprites.Count - 1);
                 renderer.sprite = possibleSprites[num];
 
                 Tile tile = newTile.AddComponent<Tile>();
                 tile.position = new Vector2Int(j, i);
 
-                newTile.transform.parent = transform;
+                newTile.transform.SetParent(transform);
                 newTile.transform.position = new Vector3(j * distance, i * distance, 0) + offset;
                 pos[j, i] = newTile.transform.position;
                 allTiles[j, i] = newTile;
@@ -184,13 +187,16 @@ public class Board : MonoBehaviour
 
     private bool SwapAndCheck(Vector2Int tile1Position, Vector2Int tile2Position)
     {
-        SwapTiles(tile1Position, tile2Position);
-        if (CheckMatch())
+        if (GetSpriteAt(tile1Position.x, tile1Position.y) != sprites[5] && GetSpriteAt(tile2Position.x, tile2Position.y) != sprites[5])
         {
             SwapTiles(tile1Position, tile2Position);
-            return true;
+            if (CheckMatch())
+            {
+                SwapTiles(tile1Position, tile2Position);
+                return true;
+            }
+            SwapTiles(tile1Position, tile2Position);
         }
-        SwapTiles(tile1Position, tile2Position);
         return false;
     }
 
@@ -244,22 +250,25 @@ public class Board : MonoBehaviour
         {
             for (int row = 0; row < dimension; row++)
             {
-                SpriteRenderer current = GetSpriteRendererAt(column, row);
-
-                List<SpriteRenderer> horizontalMatches = FindColumnMatchForTile(column, row, current.sprite);
-                if (horizontalMatches.Count >= 2)
+                if(GetSpriteAt(column, row) != sprites[5])
                 {
-                    check = true;
-                    matchedTiles.UnionWith(horizontalMatches);
-                    matchedTiles.Add(current);
-                }
+                    SpriteRenderer current = GetSpriteRendererAt(column, row);
 
-                List<SpriteRenderer> verticalMatches = FindRowMatchForTile(column, row, current.sprite);
-                if (verticalMatches.Count >= 2)
-                {
-                    check = true;
-                    matchedTiles.UnionWith(verticalMatches);
-                    matchedTiles.Add(current);
+                    List<SpriteRenderer> horizontalMatches = FindColumnMatchForTile(column, row, current.sprite);
+                    if (horizontalMatches.Count >= 2)
+                    {
+                        check = true;
+                        matchedTiles.UnionWith(horizontalMatches);
+                        matchedTiles.Add(current);
+                    }
+
+                    List<SpriteRenderer> verticalMatches = FindRowMatchForTile(column, row, current.sprite);
+                    if (verticalMatches.Count >= 2)
+                    {
+                        check = true;
+                        matchedTiles.UnionWith(verticalMatches);
+                        matchedTiles.Add(current);
+                    }
                 }
             }
         }
@@ -305,10 +314,13 @@ public class Board : MonoBehaviour
         {
             for(int row = 0; row < dimension; row++)
             {
-                if (column < dimension-1) check = SwapAndCheck(new Vector2Int(column, row), new Vector2Int(column+1, row));
-                if (check) return true;
-                if (row < dimension - 1) check = SwapAndCheck(new Vector2Int(column, row), new Vector2Int(column, row+1));
-                if (check) return true;
+                if(GetSpriteAt(column, row) != sprites[5])
+                {
+                    if (column < dimension - 1) check = SwapAndCheck(new Vector2Int(column, row), new Vector2Int(column + 1, row));
+                    if (check) return true;
+                    if (row < dimension - 1) check = SwapAndCheck(new Vector2Int(column, row), new Vector2Int(column, row + 1));
+                    if (check) return true;
+                }
             }
         }
         return false; 
@@ -328,13 +340,20 @@ public class Board : MonoBehaviour
                     SpriteRenderer next = current;
                     for (int i = row; i < dimension - 1; i++)
                     {
-                        //StartCoroutine(allTiles[column, i].GetComponent<Tile>().FallDown(pos[column, i], pos[column, i+1]));
-                        next = GetSpriteRendererAt(column, i + 1);
-                        current.sprite = next.sprite;
-                        current = next;
-                        
+                        int j = i + 1;
+                        if(GetSpriteAt(column, i) != sprites[5])
+                        {
+                            while(GetSpriteAt(column, j) == sprites[5] && j+1 < dimension)
+                            {
+                                j++;
+                            }
+                            StartCoroutine(allTiles[column, i].GetComponent<Tile>().FallDown(pos[column, j], pos[column, i]));
+                            next = GetSpriteRendererAt(column, j);
+                            current.sprite = next.sprite;
+                            current = next;
+                        }
                     }
-                    next.sprite = sprites[rand.Next(sprites.Count)];
+                    next.sprite = sprites[rand.Next(sprites.Count-1)];
                 }
             }
         }
