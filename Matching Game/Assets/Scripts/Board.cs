@@ -13,10 +13,11 @@ public class Board : MonoBehaviour
     public GameObject tilePrefab;
     private GameObject[,] allTiles;
     private HashSet<SpriteRenderer> matchedTiles;
+    private Vector3[,] pos = new Vector3[10,10];
     
     public bool win;
 
-    private int startingMoves = 15;
+    [SerializeField] private int startingMoves = 15;
     private int remainingMoves;
 
     public TextMeshProUGUI movesText;
@@ -26,6 +27,7 @@ public class Board : MonoBehaviour
     private int _score;
     private int _goal;
     private int _highscore;
+
 
 
     public int NumMoves
@@ -89,7 +91,7 @@ public class Board : MonoBehaviour
         int level = PlayerPrefs.GetInt("win");
         Score = PlayerPrefs.GetInt("score");
         NumMoves = startingMoves;
-        Goal = level*100;
+        Goal = level*200;
         HighScore = PlayerPrefs.GetInt("highScore");
     }
     // Start is called before the first frame update
@@ -137,6 +139,7 @@ public class Board : MonoBehaviour
 
                 newTile.transform.parent = transform;
                 newTile.transform.position = new Vector3(j * distance, i * distance, 0) + offset;
+                pos[j, i] = newTile.transform.position;
                 allTiles[j, i] = newTile;
             }
         }
@@ -176,7 +179,7 @@ public class Board : MonoBehaviour
         renderer1.sprite = renderer2.sprite;
         renderer2.sprite = temp;
         
-        //SoundManager.Instance.PlaySound(SoundType.TypeMove);
+        SoundManager.Instance.PlaySound(SoundType.TypeMove);
     }
 
     private bool SwapAndCheck(Vector2Int tile1Position, Vector2Int tile2Position)
@@ -206,7 +209,7 @@ public class Board : MonoBehaviour
                     renderer.sprite = null;
                     sum++;
                 }
-                StartCoroutine(FillHoles());
+                FillHoles();
             } while (CheckMatch());
             Score += sum;
             if (Score >= Goal)
@@ -221,7 +224,6 @@ public class Board : MonoBehaviour
                     NumMoves = 0;
                     win = false;
                     GameEnding();
-
                 }
             }
         }
@@ -313,7 +315,7 @@ public class Board : MonoBehaviour
     }
     
     
-    private IEnumerator FillHoles()
+    private void FillHoles()
     {
         System.Random rand = new System.Random();
         for (int column = 0; column < dimension; column++)
@@ -326,15 +328,16 @@ public class Board : MonoBehaviour
                     SpriteRenderer next = current;
                     for (int i = row; i < dimension - 1; i++)
                     {
+                        //StartCoroutine(allTiles[column, i].GetComponent<Tile>().FallDown(pos[column, i], pos[column, i+1]));
                         next = GetSpriteRendererAt(column, i + 1);
                         current.sprite = next.sprite;
                         current = next;
+                        
                     }
                     next.sprite = sprites[rand.Next(sprites.Count)];
                 }
             }
         }
-        yield return null;
     }
 
     private void Update()
@@ -362,6 +365,6 @@ public class Board : MonoBehaviour
             PlayerPrefs.SetInt("score", 0);
             SceneManager.LoadScene(3);
         }
-        //SoundManager.Instance.PlaySound(SoundType.TypeGameOver);
+        
     }
 }

@@ -1,12 +1,18 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
     private static Tile selected;
     private SpriteRenderer _renderer;
     public Vector2Int position;
-
+    private float speed = 0.2f;
+    private bool isRunning;
     // Start is called before the first frame update
+
+    public static Tile Instance{ get; private set; }
+
     private void Start()
     {
         _renderer = GetComponent<SpriteRenderer>();
@@ -28,6 +34,7 @@ public class Tile : MonoBehaviour
         {
             if (selected == this)
             {
+                SoundManager.Instance.PlaySound(SoundType.TypeSelect);
                 selected.Unselect();
                 selected = null;
                 return;
@@ -42,14 +49,30 @@ public class Tile : MonoBehaviour
             else
             {
                 selected.Unselect();
+                SoundManager.Instance.PlaySound(SoundType.TypeSelect);
                 selected = this;
                 Select();
             }
         }
         else
         {
+            SoundManager.Instance.PlaySound(SoundType.TypeSelect);
             selected = this;
             Select();
         }
+    }
+
+    public IEnumerator FallDown(Vector3 prepos, Vector3 pos)
+    {
+        float fraction = 0;
+        isRunning = true;
+        while(isRunning)
+        {
+            if (fraction < 1) fraction += speed;
+            transform.position = Vector3.Lerp(prepos, pos, fraction);
+            if (fraction == 1) break;
+            yield return new WaitForEndOfFrame();
+        }
+        
     }
 }   
