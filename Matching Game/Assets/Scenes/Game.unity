@@ -1734,6 +1734,7 @@ MonoBehaviour:
   scoreText: {fileID: 1505804578}
   goalText: {fileID: 852793933}
   highscoreText: {fileID: 303288590}
+  block: 10
 --- !u!222 &1278880704
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2238,6 +2239,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 24100000, guid: 2e18181c8df013646aeb607ba5c93801,
         type: 2}
+    - target: {fileID: 1438527716975853833, guid: 0d1df55f2e6b2664295a2589a308ea0f,
+        type: 3}
+      propertyPath: sliderSound
+      value: 
+      objectReference: {fileID: 674611988}
     - target: {fileID: 1438527716975853834, guid: 0d1df55f2e6b2664295a2589a308ea0f,
         type: 3}
       propertyPath: m_LocalPosition.x

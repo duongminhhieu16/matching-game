@@ -9,6 +9,7 @@ public class Tile : MonoBehaviour
     public Vector2Int position;
     private float speed = 0.2f;
     private bool isRunning;
+    private bool isExploding;
     // Start is called before the first frame update
 
     public static Tile Instance{ get; private set; }
@@ -30,6 +31,7 @@ public class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (_renderer.sprite == Board.Instance.sprites[5]) return;
         if (selected != null)
         {
             if (selected == this)
@@ -62,7 +64,7 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public IEnumerator FallDown(Vector3 prepos, Vector3 pos)
+    public IEnumerator Move(Vector3 prepos, Vector3 pos)
     {
         float fraction = 0;
         isRunning = true;
@@ -71,7 +73,23 @@ public class Tile : MonoBehaviour
             fraction += speed;
             transform.position = Vector3.Lerp(prepos, pos, fraction);
             if (fraction == 1) isRunning = false;
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+    public IEnumerator Explode()
+    {
+        float fraction = 0;
+        Vector3 originalPos = transform.localScale;
+        isExploding = true;
+        while (isExploding)
+        {
+            fraction += speed;
+            transform.localScale = Vector3.Lerp(originalPos, originalPos * 3, 0.1f);
+            if (fraction >= 1)
+            {
+                isExploding = false;
+            }
+            yield return new WaitForSeconds(0.05f);
         }
         
     }

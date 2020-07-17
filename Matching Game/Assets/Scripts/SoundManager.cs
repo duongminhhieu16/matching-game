@@ -15,9 +15,10 @@ public enum SoundType
 
 public class SoundManager : MonoBehaviour
 {
-    [SerializeField] private List<AudioClip> clips;
+    public List<AudioClip> clips;
     public static SoundManager Instance;
     private AudioSource Source;
+    public Slider sliderSound;
     
     [SerializeField] private AudioMixer _MasterMixer;
 
@@ -25,6 +26,8 @@ public class SoundManager : MonoBehaviour
     {
         Instance = this;
         Source = GetComponent<AudioSource>();
+        float sliderSoundValue = PlayerPrefs.GetFloat("music");
+        sliderSound.value = sliderSoundValue;
     }
     public void SetActive()
     {
