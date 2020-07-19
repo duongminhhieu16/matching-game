@@ -10,10 +10,12 @@ public class Tile : MonoBehaviour
     private float speed = 0.2f;
     private bool isRunning;
     private bool isExploding;
+    private Vector3 originalPos = new Vector3();
+    private Vector3 changedPos = new Vector3();
     // Start is called before the first frame update
 
     public static Tile Instance{ get; private set; }
-
+    
     private void Start()
     {
         _renderer = GetComponent<SpriteRenderer>();
@@ -73,24 +75,43 @@ public class Tile : MonoBehaviour
             fraction += speed;
             transform.position = Vector3.Lerp(prepos, pos, fraction);
             if (fraction == 1) isRunning = false;
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f);
         }
     }
     public IEnumerator Explode()
     {
         float fraction = 0;
-        Vector3 originalPos = transform.localScale;
+        originalPos = transform.localScale;
+        changedPos = originalPos * 2;
+        Debug.Log("before: " + originalPos);
         isExploding = true;
         while (isExploding)
         {
-            fraction += speed;
-            transform.localScale = Vector3.Lerp(originalPos, originalPos * 3, 0.1f);
+            fraction += speed/2;
+            transform.localScale = Vector3.Lerp(originalPos, changedPos, fraction);
             if (fraction >= 1)
             {
                 isExploding = false;
             }
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
         }
-        
+    }
+    public IEnumerator Exploding()
+    {
+        float fraction = 0;
+        originalPos = transform.localScale;
+        changedPos = originalPos / 2;
+        Debug.Log("after: " + originalPos);
+        isExploding = true;
+        while (isExploding)
+        {
+            fraction += speed / 2;
+            transform.localScale = Vector3.Lerp(originalPos, changedPos, fraction);
+            if (fraction >= 1)
+            {
+                isExploding = false;
+            }
+            yield return new WaitForSeconds(0.01f);
+        }
     }
 }   

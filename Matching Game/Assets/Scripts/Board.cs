@@ -15,7 +15,7 @@ public class Board : MonoBehaviour
     private GameObject[,] allTiles;
     private HashSet<SpriteRenderer> matchedTiles;
     private Vector3[,] pos = new Vector3[dimension, dimension];
-    private List<Vector2Int> matchedPos = new List<Vector2Int>();
+    private HashSet<Vector2Int> matchedPos = new HashSet<Vector2Int>();
 
     public bool win;
 
@@ -102,7 +102,7 @@ public class Board : MonoBehaviour
     {
         allTiles = new GameObject[dimension, dimension];
         matchedTiles = new HashSet<SpriteRenderer>();
-        matchedPos = new List<Vector2Int>();
+        matchedPos = new HashSet<Vector2Int>();
         block = 10;
         do
         {
@@ -251,47 +251,53 @@ public class Board : MonoBehaviour
 
     }
 
-    public IEnumerator Exploded()
+    private IEnumerator Disappeared()
     {
-        do
+        foreach (SpriteRenderer renderer in matchedTiles)
         {
-            foreach (SpriteRenderer renderer in matchedTiles)
-            {
-                renderer.sprite = null;
-            }
-            Score += matchedTiles.Count;
-            FillHoles();
-        } while (CheckMatch());
-        yield return new WaitForSeconds(0.5f);
+            renderer.sprite = null;
+        }
+        Score += matchedTiles.Count;
+        yield return new WaitForSeconds(0.1f);
     }
 
-    public IEnumerator DoExplode()
+    private IEnumerator DoExplode()
     {
         foreach (Vector2Int pos in matchedPos)
         {
             StartCoroutine(allTiles[pos.x, pos.y].GetComponent<Tile>().Explode());
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.1f);
+        }
+        foreach (Vector2Int pos in matchedPos)
+        {
+            StartCoroutine(allTiles[pos.x, pos.y].GetComponent<Tile>().Exploding());
+            yield return new WaitForSeconds(0.1f);
         }
     }
     
-    public IEnumerator DoSwap(Vector2Int tile1Position, Vector2Int tile2Position)
+    private IEnumerator DoSwap(Vector2Int tile1Position, Vector2Int tile2Position)
     {
         StartCoroutine(allTiles[tile1Position.x, tile1Position.y].GetComponent<Tile>().Move(pos[tile2Position.x, tile2Position.y], pos[tile1Position.x, tile1Position.y]));
         StartCoroutine(allTiles[tile2Position.x, tile2Position.y].GetComponent<Tile>().Move(pos[tile1Position.x, tile1Position.y], pos[tile2Position.x, tile2Position.y]));
-        yield return null;
+        yield return new WaitForSeconds(0.1f);
     }
     public IEnumerator DoSequence(Vector2Int tile1Position, Vector2Int tile2Position)
     {
         yield return DoSwap(tile1Position, tile2Position);
-        yield return DoExplode();
-        yield return Exploded();
+        do
+        {
+            yield return DoExplode();
+            yield return Disappeared();
+            yield return FillHoles();
+        } while (CheckMatch());
+        
     }
 
     bool CheckMatch()
     {
         bool check = false;
         matchedTiles = new HashSet<SpriteRenderer>();
-        matchedPos = new List<Vector2Int>();
+        matchedPos = new HashSet<Vector2Int>();
         for (int column = 0; column < dimension; column++)
         {
             for (int row = 0; row < dimension; row++)
@@ -307,7 +313,7 @@ public class Board : MonoBehaviour
                         check = true;
                         matchedTiles.UnionWith(horizontalMatches);
                         matchedTiles.Add(current);
-                        while(count < horizontalMatches.Count)
+                        while(count <= horizontalMatches.Count)
                         {
                             matchedPos.Add(new Vector2Int(column+count, row));
                             count++;
@@ -321,7 +327,7 @@ public class Board : MonoBehaviour
                         check = true;
                         matchedTiles.UnionWith(verticalMatches);
                         matchedTiles.Add(current);
-                        while (count < verticalMatches.Count)
+                        while (count <= verticalMatches.Count)
                         {
                             matchedPos.Add(new Vector2Int(column, row + count));
                             count++;
@@ -385,7 +391,7 @@ public class Board : MonoBehaviour
     }
 
 
-    private void FillHoles()
+    private IEnumerator FillHoles()
     {
         System.Random rand = new System.Random();
         for (int column = 0; column < dimension; column++)
@@ -419,6 +425,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
+        yield return null;
     }
 
     private void Update()
