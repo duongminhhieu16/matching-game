@@ -18,6 +18,7 @@ public class Tile : MonoBehaviour
     
     private void Start()
     {
+        originalPos = transform.localScale;
         _renderer = GetComponent<SpriteRenderer>();
     }
 
@@ -81,7 +82,6 @@ public class Tile : MonoBehaviour
     public IEnumerator Explode()
     {
         float fraction = 0;
-        originalPos = transform.localScale;
         changedPos = originalPos * 2;
         Debug.Log("before: " + originalPos);
         isExploding = true;
@@ -93,25 +93,23 @@ public class Tile : MonoBehaviour
             {
                 isExploding = false;
             }
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForEndOfFrame();
         }
     }
     public IEnumerator Exploding()
     {
         float fraction = 0;
-        originalPos = transform.localScale;
-        changedPos = originalPos / 2;
-        Debug.Log("after: " + originalPos);
+        Debug.Log("after: " + changedPos);
         isExploding = true;
         while (isExploding)
         {
             fraction += speed / 2;
-            transform.localScale = Vector3.Lerp(originalPos, changedPos, fraction);
+            transform.localScale = Vector3.Lerp(changedPos, originalPos, fraction);
             if (fraction >= 1)
             {
                 isExploding = false;
             }
-            yield return new WaitForSeconds(0.01f);
+            yield return new WaitForEndOfFrame();
         }
     }
 }   

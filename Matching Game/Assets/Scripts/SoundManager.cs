@@ -29,6 +29,11 @@ public class SoundManager : MonoBehaviour
         float sliderSoundValue = PlayerPrefs.GetFloat("music");
         sliderSound.value = sliderSoundValue;
     }
+    private void Start()
+    {
+        PlayerPrefs.SetFloat("music", 0);
+        sliderSound.value = PlayerPrefs.GetFloat("music", 0);
+    }
     public void SetActive()
     {
         PlayerPrefs.SetInt("active", 1);
