@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
-public class Tile : MonoBehaviour
+public class TileController : MonoBehaviour
 {
-    private static Tile selected;
+    private static TileController selected;
     private SpriteRenderer _renderer;
-    public Vector2Int position;
+    private Vector2Int position;
     private float speed = 0.2f;
     private bool isRunning;
     private bool isExploding;
@@ -14,8 +13,6 @@ public class Tile : MonoBehaviour
     private Vector3 changedPos = new Vector3();
     // Start is called before the first frame update
 
-    public static Tile Instance{ get; private set; }
-    
     private void Start()
     {
         originalPos = transform.localScale;
@@ -31,30 +28,41 @@ public class Tile : MonoBehaviour
     {
         _renderer.color = Color.white;
     }
-
+    public void SetPosition(Vector2Int position)
+    {
+        this.position = position;
+    }
+    public Vector2Int GetPosition()
+    {
+        return position;
+    }
     private void OnMouseDown()
     {
-        if (_renderer.sprite == Board.Instance.sprites[5]) return;
+        
+        SoundManager sm = SoundManager.Instance;
+        if (_renderer.sprite == BoardPresenter.Instance.boardController.board.sprites[5]) return;
         if (selected != null)
         {
+
             if (selected == this)
             {
-                SoundManager.Instance.PlaySound(SoundType.TypeSelect);
+                sm.PlaySound(SoundType.TypeSelect);
                 selected.Unselect();
-                selected = null;
+                selected = null; Debug.Log("position " + position);
                 return;
             }
             
             if (Vector2Int.Distance(selected.position, position) == 1)
             {
-                Board.Instance.DestroyIfCombo(position, selected.position);
+                BoardPresenter.Instance.DestroyCombo(position, selected.position);
                 selected.Unselect();
                 selected = null;
+                
             }
             else
             {
                 selected.Unselect();
-                SoundManager.Instance.PlaySound(SoundType.TypeSelect);
+                sm.PlaySound(SoundType.TypeSelect);
                 selected = this;
                 Select();
             }
@@ -83,7 +91,6 @@ public class Tile : MonoBehaviour
     {
         float fraction = 0;
         changedPos = originalPos * 2;
-        Debug.Log("before: " + originalPos);
         isExploding = true;
         while (isExploding)
         {
@@ -99,7 +106,6 @@ public class Tile : MonoBehaviour
     public IEnumerator Exploding()
     {
         float fraction = 0;
-        Debug.Log("after: " + changedPos);
         isExploding = true;
         while (isExploding)
         {

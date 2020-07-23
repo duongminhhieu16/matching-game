@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.Design;
 using UnityEngine;
 using UnityEngine.Audio;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public enum SoundType
@@ -19,7 +17,7 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance;
     private AudioSource Source;
     public Slider sliderSound;
-    
+
     [SerializeField] private AudioMixer _MasterMixer;
 
     private void Awake()
@@ -31,10 +29,9 @@ public class SoundManager : MonoBehaviour
     }
     private void Start()
     {
-        PlayerPrefs.SetFloat("music", 0);
-        sliderSound.value = PlayerPrefs.GetFloat("music", 0);
+        sliderSound.value = PlayerPrefs.GetFloat("music");
     }
-    public void SetActive()
+    public void SetSoundActive()
     {
         PlayerPrefs.SetInt("active", 1);
     }
@@ -52,6 +49,7 @@ public class SoundManager : MonoBehaviour
             PlayerPrefs.SetFloat("music", volume.value);
             _MasterMixer.SetFloat("music", volume.value);
         }
+        PlayerPrefs.SetFloat("music", volume.value);
         DontDestroyOnLoad(_MasterMixer);
     }
 

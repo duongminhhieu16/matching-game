@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class PauseScreen : MonoBehaviour
+public class TransitionScreenPresenter : MonoBehaviour
 {
     bool isPaused = false;
     
@@ -23,7 +23,7 @@ public class PauseScreen : MonoBehaviour
     {
         SceneManager.LoadScene(0);
     }
-    public void NextLevel()
+    public void LoadLevel()
     {
         SceneManager.LoadScene(1);
     }

@@ -1082,7 +1082,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 15
+  orthographic size: 16
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1191,7 +1191,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -55, y: -52}
+  m_AnchoredPosition: {x: -51, y: -56.79004}
   m_SizeDelta: {x: 50, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &916351307
@@ -1696,9 +1696,12 @@ GameObject:
   m_Component:
   - component: {fileID: 1278880705}
   - component: {fileID: 1278880704}
-  - component: {fileID: 1278880701}
   - component: {fileID: 1278880706}
   - component: {fileID: 1278880707}
+  - component: {fileID: 1278880702}
+  - component: {fileID: 1278880703}
+  - component: {fileID: 1278880708}
+  - component: {fileID: 1278880701}
   m_Layer: 5
   m_Name: Board
   m_TagString: Untagged
@@ -1715,9 +1718,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 1278880700}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 29e8fb0e114dd414891af121c9e5257b, type: 3}
+  m_Script: {fileID: 11500000, guid: 996e2b6f39ca80442ae3c0b0cfe472eb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  board: {fileID: 1278880703}
+--- !u!114 &1278880702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278880700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a719ec2a57809d34ab52f10315568dfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movesText: {fileID: 1302557778}
+  scoreText: {fileID: 1505804578}
+  goalText: {fileID: 852793933}
+  highscoreText: {fileID: 303288590}
+--- !u!114 &1278880703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278880700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1462ec23cc68731459486e50de9d385c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dimension: 10
   sprites:
   - {fileID: 21300000, guid: 2408a643a10e4304bb5575d6d154b524, type: 3}
   - {fileID: 21300000, guid: 753d646ce36f59a469ef67a1c69c6202, type: 3}
@@ -1725,16 +1758,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 21fbbe854015d824586e40698bf56c41, type: 3}
   - {fileID: 21300000, guid: 6676ac699aa74684da56e4746a23fe43, type: 3}
   - {fileID: 21300000, guid: 4df1965b1132ae441b62d3f6cfb383bf, type: 3}
-  distance: 1.5
-  tilePrefab: {fileID: 8240428727968202350, guid: 3207d6cefe6d64d4c9986bb5143433a2,
-    type: 3}
-  win: 0
-  startingMoves: 15
-  movesText: {fileID: 1302557778}
-  scoreText: {fileID: 1505804578}
-  goalText: {fileID: 852793933}
-  highscoreText: {fileID: 303288590}
-  block: 10
+  distance: 1.4
+  tilePrefab: {fileID: 1767930512}
+  BLOCK: 10
 --- !u!222 &1278880704
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1806,6 +1832,19 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
+--- !u!114 &1278880708
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1278880700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29e8fb0e114dd414891af121c9e5257b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  boardController: {fileID: 1278880701}
 --- !u!1 &1302557775
 GameObject:
   m_ObjectHideFlags: 0
@@ -2496,9 +2535,9 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 916351310}
-        m_MethodName: PauseGame
-        m_Mode: 1
+      - m_Target: {fileID: 1449887176}
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2508,7 +2547,7 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
       - m_Target: {fileID: 1094336305}
-        m_MethodName: SetActive
+        m_MethodName: SetSoundActive
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2952,19 +2991,6 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1585980987}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1767930515
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1767930512}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d43c1af94af04642a1f1439fb2eb4de, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  position: {x: 0, y: 0}
 --- !u!1 &1836151052
 GameObject:
   m_ObjectHideFlags: 0
@@ -3310,7 +3336,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 916351310}
+      - m_Target: {fileID: 2071106071}
         m_MethodName: PauseGame
         m_Mode: 1
         m_Arguments:
