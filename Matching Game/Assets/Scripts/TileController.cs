@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿ using System.Collections;
 using UnityEngine;
 
 public class TileController : MonoBehaviour
@@ -84,7 +84,7 @@ public class TileController : MonoBehaviour
             fraction += speed;
             transform.position = Vector3.Lerp(prepos, pos, fraction);
             if (fraction == 1) isRunning = false;
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.01f);
         }
     }
     public IEnumerator Explode()

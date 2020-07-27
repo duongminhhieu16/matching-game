@@ -27,8 +27,6 @@ public class BoardPresenter : MonoBehaviour
             int numMoves = PlayerPrefs.GetInt("numMoves") - 1;
 
             PlayerPrefs.SetInt("numMoves", numMoves);
-            Debug.Log(numMoves);
-            Debug.Log(PlayerPrefs.GetInt("score"));
         }
         if (!boardController.CheckOnePossibleMatchAtleast())
         {
@@ -45,7 +43,7 @@ public class BoardPresenter : MonoBehaviour
             renderer.sprite = null;
         }
         PlayerPrefs.SetInt("score", PlayerPrefs.GetInt("score") + boardController.board.matchedTiles.Count);
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.06f);
     }
 
     private IEnumerator DoExplode()
@@ -53,12 +51,12 @@ public class BoardPresenter : MonoBehaviour
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Explode());
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.06f);
         }
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Exploding());
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.06f);
         }
     }
 
