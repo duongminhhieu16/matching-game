@@ -1,21 +1,18 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Threading.Tasks;
 public class ScoreController : MonoBehaviour
 {
     public ScoreData scoreData = new ScoreData();
     // Start is called before the first frame update
-    public async void UpdateScoreFromDatabase()
+    public async void UpdateScoreToDatabase()
     {
-        await FirebaseInit.LoadSpecificUser();
-        if (FirebaseInit.playerInfo.userScore > scoreData.HighScore)
+        await FirebaseInit.LoadScoreOfSpecificUser();
+        if (FirebaseInit.highscoreOfUser > scoreData.HighScore)
         {
-            scoreData.HighScore = FirebaseInit.playerInfo.userScore;
+            scoreData.HighScore = FirebaseInit.highscoreOfUser;
         }
-        FirebaseInit.playerInfo.userScore = scoreData.Score;
-        
+        FirebaseInit.UpdateScore(scoreData.Score);
+        PlayerPrefs.SetInt("highScore", FirebaseInit.highscoreOfUser);
     }
     public void CheckIfGameEnd()
     {
@@ -32,5 +29,9 @@ public class ScoreController : MonoBehaviour
             PlayerPrefs.SetInt("score", 0);
             SceneManager.LoadScene(3);
         }
+    }
+    private void Update()
+    {
+        UpdateScoreToDatabase();
     }
 }

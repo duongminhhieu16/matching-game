@@ -3,105 +3,91 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-
-using UnityEngine.UI;
-
+using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class LeaderboardHandler : MonoBehaviour
 {
     //firebase database initialization
-    public List<TextMeshProUGUI> usersBarList = new List<TextMeshProUGUI>();
-    public TextMeshProUGUI userBarPrefab;
-
-    private Transform usersPlacePosition;
+    public List<TextMeshProUGUI> nameList = new List<TextMeshProUGUI>();
+    public List<TextMeshProUGUI> scoreList = new List<TextMeshProUGUI>();
+    public TextMeshProUGUI namePrefab;
+    public TextMeshProUGUI scorePrefab;
+    private static int page = 0;
+    private static int userNumEachPage = 5;
+    private int rank_num = 0;
     public Transform firstUserPosition;
 
-    public const int MAX_USERS_LEADERBOARD = 5;
-
-    public GameObject leaderBoardScreen;
+    public const int MAX_USERS_LEADERBOARD = 100;
 
 
-    private void Awake()
+    private async void Awake()
     {
+        page = 0;
+        await LoadDataFromServer();
         float yPos = firstUserPosition.transform.localPosition.y;
-        for (int i = 0; i < MAX_USERS_LEADERBOARD; i++)
+        for (int i = 0; i < 5; i++)
         {
-            TextMeshProUGUI userBar = Instantiate(userBarPrefab);
-            userBar.transform.SetParent(transform);
-            userBar.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
-            userBar.transform.localPosition = new Vector2(0, yPos);
-            yPos -= 120;
-            usersBarList.Add(userBar);
-        }
-    }
+           
+            TextMeshProUGUI nameText = Instantiate(namePrefab);
+            nameText.transform.SetParent(transform);
+            nameText.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
+            nameText.transform.localPosition = new Vector2(namePrefab.transform.localPosition.x, yPos);
 
-    private void Start()
-    {
-
-    }
-
-    public void OpenLeaderBoard()
-    {
-        StartCoroutine(LoadDataFromServer());
-    }
-
-    private IEnumerator LoadDataFromServer()
-    {
-        FirebaseInit.loaded = false;
-        FirebaseInit.LoadHighestScoreUsersInfo(MAX_USERS_LEADERBOARD);
-        while (!FirebaseInit.loaded)
-        {
-            yield return new WaitForEndOfFrame();
+            TextMeshProUGUI scoreText = Instantiate(scorePrefab);
+            scoreText.transform.SetParent(transform);
+            scoreText.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
+            scoreText.transform.localPosition = new Vector2(scorePrefab.transform.localPosition.x, yPos);
+            yPos -= 200;
+            scoreList.Add(scoreText);
+            nameList.Add(nameText);
         }
         UpdateDataToLeaderBoard();
-        Invoke("ShowLeaderBoard", 1.0f);
-        yield return null;
     }
 
-    private void ShowLeaderBoard()
+    
+
+    private async Task LoadDataFromServer()
     {
-        leaderBoardScreen.SetActive(true);
-        float waitTime = 0;
-        for (int i = 0; i < MAX_USERS_LEADERBOARD; i++)
-        {
-            StartCoroutine(usersBarList[i].GetComponent<UserBar>().StartAppear(waitTime));
-            waitTime += 0.1f;
-        }
+        await FirebaseInit.LoadHighestScoreUsersInfo(MAX_USERS_LEADERBOARD);
+        rank_num = FirebaseInit.users.Count;
     }
-
-    public void CloseLeaderBoard()
-    {
-        leaderBoardScreen.SetActive(false);
-    }
-
     private void UpdateDataToLeaderBoard()
     {
-        long scoreFront = 0;
-        int rankCurrent = 0;
-        int i = 0;
-        foreach (User userInfo in FirebaseInit.users)
+        int cnt = 0;
+        //each page display 5 users
+        for (int rank = userNumEachPage*page; rank < rank_num; rank++)
         {
-            if (i != 0)
-            {
-                if (userInfo.userScore == scoreFront)
-                {
-                    userInfo.SetRank(rankCurrent);
-                }
-                else
-                {
-                    rankCurrent = i + 1;
-                    userInfo.SetRank(rankCurrent);
-                    scoreFront = userInfo.userScore;
-                }
-            }
-            else
-            {
-                scoreFront = userInfo.userScore;
-                rankCurrent = 1;
-                userInfo.SetRank(rankCurrent);
-            }
-            usersBarList[i].GetComponent<UserBar>().SetUser(userInfo);
-            i++;
+            if (FirebaseInit.playerID == FirebaseInit.users[rank_num-rank-1].id) nameList[cnt].text = rank + 1 + ". you";
+            else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
+            scoreList[cnt].text = FirebaseInit.users[rank_num - rank - 1].userScore.ToString();
+            cnt++;
+            if (cnt == 5) break;
+        }
+        for(int i = cnt; i < userNumEachPage; i++)
+        {
+            nameList[i].text = "";
+            scoreList[i].text = "";
+        }
+    }
+    public void NextPage()
+    {
+        if(rank_num - (page+1) * userNumEachPage > 0) page++;
+        UpdateDataToLeaderBoard();
+    }
+    public void PreviousPage()
+    {
+        if (page > 0)
+        {
+            page--;
+            UpdateDataToLeaderBoard();
+            return;
+        }
+        page--;
+        if (page < 0)
+        {
+            page = 0;
+            SceneManager.LoadScene(0);
         }
     }
 }

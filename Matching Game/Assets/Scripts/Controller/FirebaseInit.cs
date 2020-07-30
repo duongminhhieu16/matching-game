@@ -9,7 +9,6 @@ public class FirebaseInit : MonoBehaviour
 {
     public static DatabaseReference reference;
     public static string playerID;
-    public static bool loaded;
     public static int highscoreOfUser;
     public static User playerInfo;
     public static List<User> users = new List<User>();
@@ -27,15 +26,20 @@ public class FirebaseInit : MonoBehaviour
             reference = FirebaseDatabase.DefaultInstance.RootReference;
             playerID = SystemInfo.deviceUniqueIdentifier;
         }
-        if (reference.Child("users").Child(playerID) == null)
-        {
-            CreatePlayerInfo();
-        }
+        // check if this user exists
+        FirebaseDatabase.DefaultInstance.GetReference("users").Child(playerID)
+            .GetValueAsync().ContinueWith(task =>
+            {
+                DataSnapshot d = task.Result;
+                User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
+                if (u == null)
+                    CreatePlayerInfo();
+            });
     }
     
-    public static async Task LoadSpecificUser()
+    public static async Task LoadScoreOfSpecificUser()
     {
-         await FirebaseDatabase.DefaultInstance.GetReference("users")
+        await FirebaseDatabase.DefaultInstance.GetReference("users")
             .GetValueAsync().ContinueWith(task =>
             {
                 if (task.IsFaulted)
@@ -45,20 +49,24 @@ public class FirebaseInit : MonoBehaviour
                 else if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
+                    
                     foreach (var user in snapshot.Children)
                     {
                         User us = JsonUtility.FromJson<User>(user.GetRawJsonValue());
-                        if (playerID == us.id) playerInfo = us;
-                        
+                        if (playerID == us.id)
+                        {
+                            playerInfo = us;
+                            highscoreOfUser = us.userScore;
+                        }
                     }
                 }
             });
         
     }
-    public static void LoadHighestScoreUsersInfo(int user_num)
+    public static async Task LoadHighestScoreUsersInfo(int user_num)
     {
         users.Clear();
-        FirebaseDatabase.DefaultInstance.GetReference("users").OrderByChild("userScore").LimitToLast(user_num)
+        await FirebaseDatabase.DefaultInstance.GetReference("users").OrderByChild("userScore").LimitToLast(user_num)
             .GetValueAsync().ContinueWith(task =>
             {
                 if (task.IsFaulted)
@@ -68,14 +76,13 @@ public class FirebaseInit : MonoBehaviour
                 else if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
-                    int idx = 0;
+                    int rank = 0;
                     foreach (DataSnapshot user in snapshot.Children)
                     {
                         User us = JsonUtility.FromJson<User>(user.GetRawJsonValue());
-                        users.Insert(idx, us);
-                        idx++;
+                        users.Insert(rank, us);
+                        rank++;
                     }
-                    loaded = true;
                 }
             });
         FirebaseDatabase.DefaultInstance
@@ -102,7 +109,7 @@ public class FirebaseInit : MonoBehaviour
     }
     public static void CreatePlayerInfo()
     {
-        playerInfo = new User("name", "email@gmail.com", 10, playerID);
+        playerInfo = new User("name", "email@gmail.com", 0, playerID);
         string json = JsonUtility.ToJson(playerInfo);
         reference.Child("users").Child(playerID).SetRawJsonValueAsync(json);
     }

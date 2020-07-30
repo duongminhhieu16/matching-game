@@ -11,7 +11,7 @@ public class ScorePresenter : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI goalText;
     public TextMeshProUGUI highscoreText;
-    public ScoreController scoreController;
+    public static ScoreController scoreController;
     private void Awake()
     {
         int level = PlayerPrefs.GetInt("win");
@@ -56,7 +56,7 @@ public class ScorePresenter : MonoBehaviour
         }
         ReadScore();
         DisplayScore();
-        scoreController.UpdateScoreFromDatabase();
+        scoreController.UpdateScoreToDatabase();
     }
     
     
