@@ -10,6 +10,7 @@ public class BoardController : MonoBehaviour
     {
         Instance = this;
     }
+    
     public void SetUpBoard()
     {
         bool possibleMove = true;

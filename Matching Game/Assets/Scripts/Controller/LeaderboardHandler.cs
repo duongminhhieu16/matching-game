@@ -1,16 +1,17 @@
-﻿
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using System.Threading.Tasks;
-using UnityEngine.SceneManagement;
 
 public class LeaderboardHandler : MonoBehaviour
 {
     //firebase database initialization
     public List<TextMeshProUGUI> nameList = new List<TextMeshProUGUI>();
     public List<TextMeshProUGUI> scoreList = new List<TextMeshProUGUI>();
+    public GameObject previousPageButton;
+    public GameObject nextPageButton;
+    public GameObject backToMenuButton;
+
     public TextMeshProUGUI namePrefab;
     public TextMeshProUGUI scorePrefab;
     private static int page = 0;
@@ -28,7 +29,6 @@ public class LeaderboardHandler : MonoBehaviour
         float yPos = firstUserPosition.transform.localPosition.y;
         for (int i = 0; i < 5; i++)
         {
-           
             TextMeshProUGUI nameText = Instantiate(namePrefab);
             nameText.transform.SetParent(transform);
             nameText.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
@@ -38,7 +38,7 @@ public class LeaderboardHandler : MonoBehaviour
             scoreText.transform.SetParent(transform);
             scoreText.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
             scoreText.transform.localPosition = new Vector2(scorePrefab.transform.localPosition.x, yPos);
-            yPos -= 200;
+            yPos -= 100;
             scoreList.Add(scoreText);
             nameList.Add(nameText);
         }
@@ -58,7 +58,7 @@ public class LeaderboardHandler : MonoBehaviour
         //each page display 5 users
         for (int rank = userNumEachPage*page; rank < rank_num; rank++)
         {
-            if (FirebaseInit.playerID == FirebaseInit.users[rank_num-rank-1].id) nameList[cnt].text = rank + 1 + ". you";
+            if (FirebaseInit.playerID == FirebaseInit.users[rank_num-rank-1].id) nameList[cnt].text = rank + 1 + " " + FirebaseInit.users[rank_num - rank - 1].userName;
             else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
             scoreList[cnt].text = FirebaseInit.users[rank_num - rank - 1].userScore.ToString();
             cnt++;
@@ -81,13 +81,11 @@ public class LeaderboardHandler : MonoBehaviour
         {
             page--;
             UpdateDataToLeaderBoard();
-            return;
         }
-        page--;
-        if (page < 0)
+        if (page == 0)
         {
-            page = 0;
-            SceneManager.LoadScene(0);
+            previousPageButton.SetActive(false);
+            backToMenuButton.SetActive(true);
         }
     }
 }

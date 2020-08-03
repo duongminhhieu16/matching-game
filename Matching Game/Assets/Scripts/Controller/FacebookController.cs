@@ -3,27 +3,55 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using Firebase.Database;
+using Boo.Lang;
+using Firebase.Auth;
 
 public class FacebookController : MonoBehaviour
 {
     public GameObject DialogLoggedIn;
     public GameObject DialogLoggedOut;
     public GameObject DialogUserName;
+    public GameObject DialogProfilePic;
+
+    public static int cnt = 0;
     // Start is called before the first frame update
     void Awake()
     {
-        if (!FB.IsInitialized)
+        facebookController = this;
+        if (!FB.IsLoggedIn && cnt == 0)
         {
-            FB.Init(() =>
-            {
-                if (FB.IsInitialized)
-                    FB.ActivateApp();
-                else
-                    Debug.Log("FB initialize error");
-            },
-                isGameShown => { Time.timeScale = !isGameShown ? 0 : 1; });
+            FB.Init(SetInit, OnHideUnity);
+            cnt++;
         }
-        else FB.ActivateApp();
+        else if(FB.IsLoggedIn && cnt > 0)
+        {
+            HandleFBMenus(FB.IsLoggedIn);
+        }
+       
+        GetStatus();
+    }
+    public static GameObject instance;
+    public static FacebookController facebookController { get; private set; }
+    
+    public void GetStatus()
+    {
+        if (FB.IsLoggedIn)
+        {
+            if (!DialogLoggedIn.activeSelf)
+            {
+                DialogLoggedIn.SetActive(true);
+                DialogLoggedOut.SetActive(false);
+            }
+        }
+        else
+        {
+            if (!DialogLoggedOut.activeSelf)
+            {
+                DialogLoggedIn.SetActive(false);
+                DialogLoggedOut.SetActive(true);
+            }
+        }
     }
     void SetInit()
     {
@@ -50,12 +78,19 @@ public class FacebookController : MonoBehaviour
     }
     public void FBLogIn()
     {
-        List<string> permissions = new List<string>();
+        System.Collections.Generic.List<string> permissions = new System.Collections.Generic.List<string>();
         permissions.Add("public_profile");
+        permissions.Add("email");
         FB.LogInWithReadPermissions(permissions, AuthCallBack);
+    }
+    public void FBLogOut()
+    {
+        FB.LogOut();
+        PlayerPrefs.SetInt("FBLogOut", 1);
     }
     void AuthCallBack(IResult result)
     {
+        
         if(result.Error != null)
         {
             Debug.Log(result.Error);
@@ -80,6 +115,7 @@ public class FacebookController : MonoBehaviour
             DialogLoggedIn.SetActive(true);
             DialogLoggedOut.SetActive(false);
             FB.API("/me?fields=name", HttpMethod.GET, DisplayUserName);
+            FB.API("/me/picture?type=square&height=100&width=100", HttpMethod.GET, DisplayProfilePicture);
         }
         else
         {
@@ -87,16 +123,31 @@ public class FacebookController : MonoBehaviour
             DialogLoggedOut.SetActive(true);
         }
     }
-    void DisplayUserName(IGraphResult result)
+    void DisplayUserName(IResult result)
     {
         TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
         if(result.Error == null)
         {
             userName.text = "Hi there, \n" + result.ResultDictionary["name"];
+            PlayerPrefs.SetString("playerName", "" + result.ResultDictionary["name"]);
         }
         else
         {
             Debug.LogError(result.Error);
         }
     }
+    void DisplayProfilePicture(IGraphResult result)
+    {
+        
+        if(result.Texture != null)
+        {
+            Image profilePic = DialogProfilePic.GetComponent<Image>();
+            profilePic.sprite = Sprite.Create(result.Texture, new Rect(0, 0, 100, 100), new Vector2());
+        }
+        else
+        {
+            Debug.Log("Loading profile picture error!");
+        }
+    }
+    
 }
