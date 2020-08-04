@@ -51,12 +51,12 @@ public class BoardPresenter : MonoBehaviour
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Explode());
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f);
         }
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Exploding());
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.05f);
         }
     }
 

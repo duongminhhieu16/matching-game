@@ -55,7 +55,7 @@ public class FirebaseInit : MonoBehaviour
             });
     }
     
-    public static async Task LoadScoreOfCurrentPlayer()
+    public static async Task LoadHighScoreOfCurrentPlayer()
     {
         await FirebaseDatabase.DefaultInstance.GetReference("users")
             .GetValueAsync().ContinueWith(task =>
@@ -130,6 +130,7 @@ public class FirebaseInit : MonoBehaviour
    
     public static void UpdateScore(int score)
     {
+        if (score < highscoreOfUser) score = highscoreOfUser; 
         if (FB.IsLoggedIn) reference.Child("users").Child(FacebookController.facebookID).Child("userScore").SetValueAsync(score);
         else reference.Child("users").Child(guestID).Child("userScore").SetValueAsync(score);
     }

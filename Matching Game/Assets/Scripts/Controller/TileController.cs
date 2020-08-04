@@ -100,7 +100,7 @@ public class TileController : MonoBehaviour
             {
                 isExploding = false;
             }
-            yield return new WaitForSeconds(0.02f);
+            yield return new WaitForSeconds(0.01f);
         }
     }
     public IEnumerator Exploding()
@@ -115,7 +115,7 @@ public class TileController : MonoBehaviour
             {
                 isExploding = false;
             }
-            yield return new WaitForSeconds(0.02f);
+            yield return new WaitForSeconds(0.01f);
         }
     }
     /*private void Update()
