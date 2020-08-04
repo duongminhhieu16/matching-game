@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class FacebookController : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class FacebookController : MonoBehaviour
     public GameObject DialogLoggedOut;
     public GameObject DialogUserName;
     public GameObject DialogProfilePic;
+    public TextMeshProUGUI friendsText;
 
     public static string facebookID = "a";
     public static string facebookPlayerName = "a";
@@ -22,16 +24,16 @@ public class FacebookController : MonoBehaviour
             FB.Init(SetInit, OnHideUnity);
             cnt++;
         }
-        else if(FB.IsLoggedIn && cnt > 0)
+        else if (FB.IsLoggedIn && cnt > 0)
         {
             HandleFBMenus(FB.IsLoggedIn);
         }
-       
+
         GetStatus();
     }
     public static GameObject instance;
     public static FacebookController facebookController { get; private set; }
-    
+
     public void GetStatus()
     {
         if (FB.IsLoggedIn)
@@ -79,6 +81,7 @@ public class FacebookController : MonoBehaviour
         System.Collections.Generic.List<string> permissions = new System.Collections.Generic.List<string>();
         permissions.Add("public_profile");
         permissions.Add("email");
+        permissions.Add("user_friends");
         FB.LogInWithReadPermissions(permissions, AuthCallBack);
     }
     public void FBLogOut()
@@ -88,8 +91,8 @@ public class FacebookController : MonoBehaviour
     }
     void AuthCallBack(IResult result)
     {
-        
-        if(result.Error != null)
+
+        if (result.Error != null)
         {
             Debug.Log(result.Error);
         }
@@ -125,7 +128,7 @@ public class FacebookController : MonoBehaviour
     void DisplayUserName(IResult result)
     {
         TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
-        if(result.Error == null)
+        if (result.Error == null)
         {
             userName.text = "Hi there, \n" + result.ResultDictionary["name"];
             facebookPlayerName = "" + result.ResultDictionary["name"];
@@ -137,8 +140,8 @@ public class FacebookController : MonoBehaviour
     }
     void DisplayProfilePicture(IGraphResult result)
     {
-        
-        if(result.Texture != null)
+
+        if (result.Texture != null)
         {
             Image profilePic = DialogProfilePic.GetComponent<Image>();
             profilePic.sprite = Sprite.Create(result.Texture, new Rect(0, 0, 100, 100), new Vector2());
@@ -148,5 +151,24 @@ public class FacebookController : MonoBehaviour
             Debug.Log("Loading profile picture error!");
         }
     }
-    
+    public void FBShare()
+    {
+        FB.ShareLink(new System.Uri("https://www.youtube.com/watch?v=uZpMmP5EUEI"), "Check it out!!", "It's interesting!!!", new System.Uri("https://images.unsplash.com/photo-1526047932273-341f2a7631f9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80"));
+    }
+    public void FacebookGameRequest()
+    {
+        FB.AppRequest("Hey! This game is really good. Join with me!!", title: "Match 3");
+    }
+    public void GetFriendsPlayingThisGame()
+    {
+        string query = "/me/friends";
+        FB.API(query, HttpMethod.GET, result =>
+        {
+        var dictionary = (Dictionary<string, object>)Facebook.MiniJSON.Json.Deserialize(result.RawResult);
+        var friendsList = (List<object>)dictionary["data"];
+        friendsText.text = string.Empty;
+        foreach (var dict in friendsList)
+            friendsText.text += ((Dictionary<string, object>)dict)["name"];
+        });
+    }
 }
