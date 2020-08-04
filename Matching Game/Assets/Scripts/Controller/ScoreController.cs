@@ -6,12 +6,12 @@ public class ScoreController : MonoBehaviour
     // Start is called before the first frame update
     public async void UpdateScoreToDatabase()
     {
-        await FirebaseInit.LoadScoreOfSpecificUser();
+        await FirebaseInit.LoadScoreOfCurrentPlayer();
         if (FirebaseInit.highscoreOfUser > scoreData.HighScore)
         {
             scoreData.HighScore = FirebaseInit.highscoreOfUser;
         }
-        FirebaseInit.UpdateScore(scoreData.Score);
+        FirebaseInit.UpdateScore(scoreData.HighScore);
         PlayerPrefs.SetInt("highScore", FirebaseInit.highscoreOfUser);
     }
     public void CheckIfGameEnd()
@@ -30,8 +30,5 @@ public class ScoreController : MonoBehaviour
             SceneManager.LoadScene(3);
         }
     }
-    private void Update()
-    {
-        UpdateScoreToDatabase();
-    }
+    
 }

@@ -1610,6 +1610,17 @@ PrefabInstance:
       propertyPath: m_text
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 7478344052522523030, guid: 8ce4779aabfd95e43afae56dfe999761,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 7478344052522523030, guid: 8ce4779aabfd95e43afae56dfe999761,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 7478344052522523031, guid: 8ce4779aabfd95e43afae56dfe999761,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -2227,6 +2238,17 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 2081649168}
         m_MethodName: PlayGame
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1760077543}
+        m_MethodName: CreateFacebookPlayer
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4531,6 +4553,22 @@ PrefabInstance:
       propertyPath: m_textInfo.pageCount
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7478344052522523030, guid: 8ce4779aabfd95e43afae56dfe999761,
+        type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee,
+        type: 2}
+    - target: {fileID: 7478344052522523030, guid: 8ce4779aabfd95e43afae56dfe999761,
+        type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7478344052522523030, guid: 8ce4779aabfd95e43afae56dfe999761,
+        type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
     - target: {fileID: 7478344052522523031, guid: 8ce4779aabfd95e43afae56dfe999761,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -94,13 +94,13 @@ public class TileController : MonoBehaviour
         isExploding = true;
         while (isExploding)
         {
-            fraction += speed/2;
+            fraction += speed;
             transform.localScale = Vector3.Lerp(originalPos, changedPos, fraction);
             if (fraction >= 1)
             {
                 isExploding = false;
             }
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(0.02f);
         }
     }
     public IEnumerator Exploding()
@@ -109,13 +109,20 @@ public class TileController : MonoBehaviour
         isExploding = true;
         while (isExploding)
         {
-            fraction += speed / 2;
+            fraction += speed;
             transform.localScale = Vector3.Lerp(changedPos, originalPos, fraction);
             if (fraction >= 1)
             {
                 isExploding = false;
             }
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForSeconds(0.02f);
         }
     }
+    /*private void Update()
+    {
+        if(Input.touchCount > 0)
+        {
+            Touch t1 = Input.GetTouch(0);
+        }
+    }*/
 }   

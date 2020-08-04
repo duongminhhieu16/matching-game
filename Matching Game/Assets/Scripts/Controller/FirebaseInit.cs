@@ -4,14 +4,16 @@ using Firebase.Database;
 using Firebase.Unity.Editor;
 using Boo.Lang;
 using System.Threading.Tasks;
+using Facebook.Unity;
 
 public class FirebaseInit : MonoBehaviour
 {
     public static DatabaseReference reference;
-    public static string playerID;
+    public static string guestID;
     public static int highscoreOfUser;
     public static User playerInfo;
     public static List<User> users = new List<User>();
+    
     
     // Start is called before the first frame update
     private void Awake()
@@ -24,20 +26,36 @@ public class FirebaseInit : MonoBehaviour
         {
             FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://match-3-game-81f2c.firebaseio.com/");
             reference = FirebaseDatabase.DefaultInstance.RootReference;
-            playerID = SystemInfo.deviceUniqueIdentifier;
+            guestID = SystemInfo.deviceUniqueIdentifier;
         }
         // check if this user exists
-        FirebaseDatabase.DefaultInstance.GetReference("users").Child(playerID)
+        if(!FB.IsLoggedIn) CreateGuestPlayer();
+    }
+
+    private static void CreateGuestPlayer()
+    {
+        FirebaseDatabase.DefaultInstance.GetReference("users").Child(guestID)
             .GetValueAsync().ContinueWith(task =>
             {
                 DataSnapshot d = task.Result;
                 User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
                 if (u == null)
-                    CreatePlayerInfo();
+                    CreatePlayerInfo(guestID, "Guest" + Random.Range(0, 10000));
+            });
+    }
+    public void CreateFacebookPlayer()
+    {
+        if(FB.IsLoggedIn) FirebaseDatabase.DefaultInstance.GetReference("users").Child(FacebookController.facebookID)
+            .GetValueAsync().ContinueWith(task =>
+            {
+                DataSnapshot d = task.Result;
+                User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
+                if (u == null)
+                    CreatePlayerInfo(FacebookController.facebookID, FacebookController.facebookPlayerName);
             });
     }
     
-    public static async Task LoadScoreOfSpecificUser()
+    public static async Task LoadScoreOfCurrentPlayer()
     {
         await FirebaseDatabase.DefaultInstance.GetReference("users")
             .GetValueAsync().ContinueWith(task =>
@@ -53,10 +71,21 @@ public class FirebaseInit : MonoBehaviour
                     foreach (var user in snapshot.Children)
                     {
                         User us = JsonUtility.FromJson<User>(user.GetRawJsonValue());
-                        if (playerID == us.id)
+                        if (FB.IsLoggedIn)
                         {
-                            playerInfo = us;
-                            highscoreOfUser = us.userScore;
+                            if (FacebookController.facebookID == us.id)
+                            {
+                                playerInfo = us;
+                                highscoreOfUser = us.userScore;
+                            }
+                        }
+                        else
+                        {
+                            if(guestID == us.id)
+                            {
+                                playerInfo = us;
+                                highscoreOfUser = us.userScore;
+                            }
                         }
                     }
                 }
@@ -101,17 +130,14 @@ public class FirebaseInit : MonoBehaviour
    
     public static void UpdateScore(int score)
     {
-        if (highscoreOfUser <= score)
-        {
-            highscoreOfUser = score;
-        }
-        reference.Child("users").Child(playerID).Child("userScore").SetValueAsync(highscoreOfUser);
+        if (FB.IsLoggedIn) reference.Child("users").Child(FacebookController.facebookID).Child("userScore").SetValueAsync(score);
+        else reference.Child("users").Child(guestID).Child("userScore").SetValueAsync(score);
     }
-    public static void CreatePlayerInfo()
+    public static void CreatePlayerInfo(string id, string name)
     {
-        playerInfo = new User("name", "email@gmail.com", 0, playerID);
+        playerInfo = new User(name, "email@gmail.com", 0, id);
         string json = JsonUtility.ToJson(playerInfo);
-        reference.Child("users").Child(playerID).SetRawJsonValueAsync(json);
+        reference.Child("users").Child(id).SetRawJsonValueAsync(json);
     }
     
 }

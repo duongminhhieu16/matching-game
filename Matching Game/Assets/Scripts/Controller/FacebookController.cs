@@ -1,11 +1,7 @@
 ﻿using Facebook.Unity;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 using TMPro;
-using Firebase.Database;
-using Boo.Lang;
-using Firebase.Auth;
 
 public class FacebookController : MonoBehaviour
 {
@@ -14,6 +10,8 @@ public class FacebookController : MonoBehaviour
     public GameObject DialogUserName;
     public GameObject DialogProfilePic;
 
+    public static string facebookID = "a";
+    public static string facebookPlayerName = "a";
     public static int cnt = 0;
     // Start is called before the first frame update
     void Awake()
@@ -116,6 +114,7 @@ public class FacebookController : MonoBehaviour
             DialogLoggedOut.SetActive(false);
             FB.API("/me?fields=name", HttpMethod.GET, DisplayUserName);
             FB.API("/me/picture?type=square&height=100&width=100", HttpMethod.GET, DisplayProfilePicture);
+            facebookID = AccessToken.CurrentAccessToken.UserId;
         }
         else
         {
@@ -129,7 +128,7 @@ public class FacebookController : MonoBehaviour
         if(result.Error == null)
         {
             userName.text = "Hi there, \n" + result.ResultDictionary["name"];
-            PlayerPrefs.SetString("playerName", "" + result.ResultDictionary["name"]);
+            facebookPlayerName = "" + result.ResultDictionary["name"];
         }
         else
         {

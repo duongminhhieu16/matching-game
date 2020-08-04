@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using Facebook.Unity;
 
 public class LeaderboardHandler : MonoBehaviour
 {
@@ -29,6 +34,7 @@ public class LeaderboardHandler : MonoBehaviour
         float yPos = firstUserPosition.transform.localPosition.y;
         for (int i = 0; i < 5; i++)
         {
+           
             TextMeshProUGUI nameText = Instantiate(namePrefab);
             nameText.transform.SetParent(transform);
             nameText.GetComponent<RectTransform>().localScale = new Vector2(1.0f, 1.0f);
@@ -58,8 +64,12 @@ public class LeaderboardHandler : MonoBehaviour
         //each page display 5 users
         for (int rank = userNumEachPage*page; rank < rank_num; rank++)
         {
-            if (FirebaseInit.playerID == FirebaseInit.users[rank_num-rank-1].id) nameList[cnt].text = rank + 1 + " " + FirebaseInit.users[rank_num - rank - 1].userName;
-            else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
+            if(FB.IsLoggedIn) 
+                if (FacebookController.facebookID == FirebaseInit.users[rank_num - rank - 1].id) nameList[cnt].text = rank + 1 + ". YOU";
+                else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
+            else
+                if (FirebaseInit.guestID == FirebaseInit.users[rank_num - rank - 1].id) nameList[cnt].text = rank + 1 + ". YOU";
+                else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
             scoreList[cnt].text = FirebaseInit.users[rank_num - rank - 1].userScore.ToString();
             cnt++;
             if (cnt == 5) break;

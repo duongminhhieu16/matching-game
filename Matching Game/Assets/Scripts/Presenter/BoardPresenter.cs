@@ -43,7 +43,7 @@ public class BoardPresenter : MonoBehaviour
             renderer.sprite = null;
         }
         PlayerPrefs.SetInt("score", PlayerPrefs.GetInt("score") + boardController.board.matchedTiles.Count);
-        yield return new WaitForSeconds(0.06f);
+        yield return new WaitForEndOfFrame();
     }
 
     private IEnumerator DoExplode()
@@ -51,12 +51,12 @@ public class BoardPresenter : MonoBehaviour
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Explode());
-            yield return new WaitForSeconds(0.06f);
+            yield return new WaitForSeconds(0.1f);
         }
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Exploding());
-            yield return new WaitForSeconds(0.06f);
+            yield return new WaitForSeconds(0.1f);
         }
     }
 
@@ -110,6 +110,6 @@ public class BoardPresenter : MonoBehaviour
                 }
             }
         }
-        yield return null;
+        yield return null ;
     }
 }
