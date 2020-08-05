@@ -1,17 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
+
 public class ScoreController : MonoBehaviour
 {
     public ScoreData scoreData = new ScoreData();
     // Start is called before the first frame update
-    public async void UpdateScoreToDatabase()
+    public void UpdateScoreToDatabase()
     {
-        await FirebaseInit.LoadHighScoreOfCurrentPlayer();
-        if (FirebaseInit.highscoreOfUser > scoreData.HighScore)
+        if (scoreData.Score > FirebaseInit.highscoreOfUser)
         {
-            scoreData.HighScore = FirebaseInit.highscoreOfUser;
+            FirebaseInit.highscoreOfUser = scoreData.Score;
+            FirebaseInit.UpdateScore(scoreData.Score);
         }
-        FirebaseInit.UpdateScore(scoreData.Score);
+        
         PlayerPrefs.SetInt("highScore", FirebaseInit.highscoreOfUser);
     }
     public void CheckIfGameEnd()
