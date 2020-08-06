@@ -22,37 +22,16 @@ public class FacebookController : MonoBehaviour
         if (!FB.IsLoggedIn && cnt == 0)
         {
             FB.Init(SetInit, OnHideUnity);
-            cnt++;
         }
-        else if (FB.IsLoggedIn && cnt > 0)
+        else if (cnt > 0)
         {
             HandleFBMenus(FB.IsLoggedIn);
         }
-
-        GetStatus();
+        Debug.Log("asdasdaasdasdasda");
     }
-    public static GameObject instance;
     public static FacebookController facebookController { get; private set; }
 
-    public void GetStatus()
-    {
-        if (FB.IsLoggedIn)
-        {
-            if (!DialogLoggedIn.activeSelf)
-            {
-                DialogLoggedIn.SetActive(true);
-                DialogLoggedOut.SetActive(false);
-            }
-        }
-        else
-        {
-            if (!DialogLoggedOut.activeSelf)
-            {
-                DialogLoggedIn.SetActive(false);
-                DialogLoggedOut.SetActive(true);
-            }
-        }
-    }
+    
     void SetInit()
     {
         if (FB.IsLoggedIn)
@@ -111,18 +90,26 @@ public class FacebookController : MonoBehaviour
     }
     void HandleFBMenus(bool isLoggedIn)
     {
-        if (isLoggedIn)
+        if(PlayerPrefs.GetInt("Google") == 0)
         {
-            DialogLoggedIn.SetActive(true);
-            DialogLoggedOut.SetActive(false);
-            FB.API("/me?fields=name", HttpMethod.GET, DisplayUserName);
-            FB.API("/me/picture?type=square&height=100&width=100", HttpMethod.GET, DisplayProfilePicture);
-            facebookID = AccessToken.CurrentAccessToken.UserId;
+            if (isLoggedIn)
+            {
+                DialogLoggedIn.SetActive(true);
+                DialogLoggedOut.SetActive(false);
+                FB.API("/me?fields=name", HttpMethod.GET, DisplayUserName);
+                FB.API("/me/picture?type=square&height=100&width=100", HttpMethod.GET, DisplayProfilePicture);
+                facebookID = AccessToken.CurrentAccessToken.UserId;
+            }
+            else
+            {
+                DialogLoggedIn.SetActive(false);
+                DialogLoggedOut.SetActive(true);
+            }
         }
         else
         {
             DialogLoggedIn.SetActive(false);
-            DialogLoggedOut.SetActive(true);
+            DialogLoggedOut.SetActive(false);
         }
     }
     void DisplayUserName(IResult result)
