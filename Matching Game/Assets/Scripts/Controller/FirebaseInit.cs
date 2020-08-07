@@ -18,7 +18,7 @@ public class FirebaseInit : MonoBehaviour
 
     // Start is called before the first frame update
    
-    private void Awake()
+    private async void Awake()
     {
         firebaseInit = this;
         if(reference != null)
@@ -32,7 +32,7 @@ public class FirebaseInit : MonoBehaviour
             guestID = SystemInfo.deviceUniqueIdentifier;
         }
         GoogleController.auth = FirebaseAuth.DefaultInstance;
-        LoadHighScoreOfCurrentPlayer();
+        await LoadHighScoreOfCurrentPlayer();
     }
     public static FirebaseInit firebaseInit { get; private set; }
     
@@ -56,7 +56,6 @@ public class FirebaseInit : MonoBehaviour
                     CreatePlayerInfo(guestID, "Guest" + num.ToString());
                 Debug.Log("create guest");
             });
-        await Task.Delay(100);
         await LoadHighScoreOfCurrentPlayer();
     }
     private async void CreateFacebookPlayer()

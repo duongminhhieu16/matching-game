@@ -9,7 +9,6 @@ public class MainMenuPresenter : MonoBehaviour
     
     public void PlayGame()
     {
-        
         FacebookController.cnt++;
         PlayerPrefs.SetInt("score", 0);
         PlayerPrefs.SetInt("win", 1);

@@ -64,8 +64,11 @@ public class LeaderboardHandler : MonoBehaviour
         //each page display 5 users
         for (int rank = userNumEachPage*page; rank < rank_num; rank++)
         {
-            if(FB.IsLoggedIn) 
+            if (FB.IsLoggedIn)
                 if (FacebookController.facebookID == FirebaseInit.users[rank_num - rank - 1].id) nameList[cnt].text = rank + 1 + ". YOU";
+                else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
+            else if (PlayerPrefs.GetInt("Google") == 1)
+                if (GoogleController.auth.CurrentUser.UserId == FirebaseInit.users[rank_num - rank - 1].id) nameList[cnt].text = rank + 1 + ". YOU";
                 else nameList[cnt].text = rank + 1 + ". " + FirebaseInit.users[rank_num - rank - 1].userName;
             else
                 if (FirebaseInit.guestID == FirebaseInit.users[rank_num - rank - 1].id) nameList[cnt].text = rank + 1 + ". YOU";
