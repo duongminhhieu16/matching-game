@@ -8,6 +8,8 @@ using System.Collections;
 using Google;
 using TMPro;
 using UnityEngine.Networking;
+using Firebase.Extensions;
+
 public class GoogleController : MonoBehaviour
 {
     public GameObject DialogSignedIn;
@@ -60,7 +62,7 @@ public class GoogleController : MonoBehaviour
         Task<GoogleSignInUser> signIn = GoogleSignIn.DefaultInstance.SignIn();
         
         TaskCompletionSource<FirebaseUser> signInCompleted = new TaskCompletionSource<FirebaseUser>();
-        signIn.ContinueWith(task => {
+        signIn.ContinueWithOnMainThread(task => {
             if (task.IsCanceled)
             {
                 signInCompleted.SetCanceled();
@@ -86,10 +88,9 @@ public class GoogleController : MonoBehaviour
                         signInCompleted.SetResult(((Task<FirebaseUser>)authTask).Result);
                     }
                 });
-                
+                DisplayUserName(true);
+                DisplayUserProfilePic(true);
             }
-            TextMeshProUGUI text = DialogUserName.GetComponent<TextMeshProUGUI>();
-            text.text = "asdsadasdasdsas";
         });
         
         PlayerPrefs.SetInt("Google", 1);
