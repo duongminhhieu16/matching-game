@@ -10,6 +10,7 @@ using TMPro;
 using UnityEngine.Networking;
 using Firebase.Extensions;
 using System.Xml.XPath;
+using System.Runtime.InteropServices;
 
 public class GoogleController : MonoBehaviour
 {
@@ -36,6 +37,8 @@ public class GoogleController : MonoBehaviour
                 Debug.Log("in");
                 DialogSignedIn.SetActive(true);
                 DialogSignedOut.SetActive(false);
+                DisplayUserName(true, null);
+                DisplayUserProfilePic(true, null);
             }
             else
             {
@@ -105,23 +108,39 @@ public class GoogleController : MonoBehaviour
         auth.SignOut();
         GoogleSignIn.DefaultInstance.SignOut();
         PlayerPrefs.SetInt("Google", 0);
+        cnt = 0;
     }
     public void DisplayUserName(bool completed, GoogleSignInUser result)
     {
-
-        var user = result.DisplayName;
+        string user;
+        if (cnt == 0)
+        {
+            user = result.DisplayName.ToString();
+            cnt++;
+        }
+        else
+        {
+            user = auth.CurrentUser.DisplayName.ToString();
+        }
         if (completed)
         {
             TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
-            userName.text = "Hi there \n" + user.ToString();
+            userName.text = "Hi there \n" + user;
             Debug.Log(userName.text.ToString());
-            
         }
     }
     public IEnumerator DisplayUserProfilePic(bool completed, GoogleSignInUser result)
     {
-        var url = result.ImageUrl;
-        
+        string url;
+        if (cnt == 0)
+        {
+            url = result.ImageUrl.ToString();
+            cnt++;
+        }
+        else
+        {
+            url = auth.CurrentUser.PhotoUrl.ToString();
+        }
         if (completed)
         {
             yield return DownloadImage(url.ToString());
