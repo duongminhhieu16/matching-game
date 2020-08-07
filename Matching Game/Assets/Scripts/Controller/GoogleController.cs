@@ -88,9 +88,10 @@ public class GoogleController : MonoBehaviour
                         signInCompleted.SetResult(((Task<FirebaseUser>)authTask).Result);
                     }
                 });
-                DisplayUserName(true);
-                DisplayUserProfilePic(true);
+                
             }
+            DisplayUserName(task.IsCompleted);
+            DisplayUserProfilePic(task.IsCompleted);
         });
         
         PlayerPrefs.SetInt("Google", 1);
