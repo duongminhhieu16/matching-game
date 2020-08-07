@@ -9,6 +9,7 @@ using Google;
 using TMPro;
 using UnityEngine.Networking;
 using Firebase.Extensions;
+using System.Xml.XPath;
 
 public class GoogleController : MonoBehaviour
 {
@@ -90,8 +91,8 @@ public class GoogleController : MonoBehaviour
                 });
                 
             }
-            DisplayUserName(task.IsCompleted);
-            DisplayUserProfilePic(task.IsCompleted);
+            DisplayUserName(true, signIn.Result);
+            DisplayUserProfilePic(true, signIn.Result);
         });
         
         PlayerPrefs.SetInt("Google", 1);
@@ -105,26 +106,25 @@ public class GoogleController : MonoBehaviour
         GoogleSignIn.DefaultInstance.SignOut();
         PlayerPrefs.SetInt("Google", 0);
     }
-    public IEnumerator DisplayUserName(bool completed)
+    public void DisplayUserName(bool completed, GoogleSignInUser result)
     {
-        FirebaseAuth auth = FirebaseAuth.DefaultInstance;
-        FirebaseUser user = auth.CurrentUser;
+
+        var user = result.DisplayName;
         if (completed)
         {
-            yield return null;
             TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
-            userName.text = "Hi there \n" + user.DisplayName;
+            userName.text = "Hi there \n" + user.ToString();
+            Debug.Log(userName.text.ToString());
+            
         }
     }
-    public IEnumerator DisplayUserProfilePic(bool completed)
+    public IEnumerator DisplayUserProfilePic(bool completed, GoogleSignInUser result)
     {
-        FirebaseAuth auth = FirebaseAuth.DefaultInstance;
-        FirebaseUser user = auth.CurrentUser;
-        var url = user.PhotoUrl;
+        var url = result.ImageUrl;
+        
         if (completed)
         {
             yield return DownloadImage(url.ToString());
-            yield return null;
             Image pic = DialogProfilePic.GetComponent<Image>();
             pic.sprite = Sprite.Create(profilePic, new Rect(0, 0, 100, 100), new Vector2());
         }
