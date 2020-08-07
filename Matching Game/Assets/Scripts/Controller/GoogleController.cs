@@ -86,10 +86,10 @@ public class GoogleController : MonoBehaviour
                         signInCompleted.SetResult(((Task<FirebaseUser>)authTask).Result);
                     }
                 });
-                DisplayUserName(true);
-                DisplayUserProfilePic(true);
+                
             }
-            
+            TextMeshProUGUI text = DialogUserName.GetComponent<TextMeshProUGUI>();
+            text.text = "asdsadasdasdsas";
         });
         
         PlayerPrefs.SetInt("Google", 1);
@@ -103,12 +103,13 @@ public class GoogleController : MonoBehaviour
         GoogleSignIn.DefaultInstance.SignOut();
         PlayerPrefs.SetInt("Google", 0);
     }
-    public void DisplayUserName(bool completed)
+    public IEnumerator DisplayUserName(bool completed)
     {
         FirebaseAuth auth = FirebaseAuth.DefaultInstance;
         FirebaseUser user = auth.CurrentUser;
         if (completed)
         {
+            yield return null;
             TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
             userName.text = "Hi there \n" + user.DisplayName;
         }
@@ -121,6 +122,7 @@ public class GoogleController : MonoBehaviour
         if (completed)
         {
             yield return DownloadImage(url.ToString());
+            yield return null;
             Image pic = DialogProfilePic.GetComponent<Image>();
             pic.sprite = Sprite.Create(profilePic, new Rect(0, 0, 100, 100), new Vector2());
         }
