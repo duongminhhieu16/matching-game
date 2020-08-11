@@ -13,6 +13,7 @@ public class FirebaseInit : MonoBehaviour
     public static string guestID;
     public static int highscoreOfUser;
     public static User playerInfo;
+    public static bool loaded = false;
     public static List<User> users = new List<User>();
     
 
@@ -33,16 +34,17 @@ public class FirebaseInit : MonoBehaviour
         }
         GoogleController.auth = FirebaseAuth.DefaultInstance;
         await LoadHighScoreOfCurrentPlayer();
+        
     }
     public static FirebaseInit firebaseInit { get; private set; }
     
-    public void CreatePlayer()
+    public async void CreatePlayer()
     {
-        if (FB.IsLoggedIn) CreateFacebookPlayer();
-        else if (PlayerPrefs.GetInt("Google") == 1) CreateGooglePlayer();
-        else CreateGuestPlayer();
+        if (FB.IsLoggedIn) await CreateFacebookPlayer();
+        else if (PlayerPrefs.GetInt("Google") == 1) await CreateGooglePlayer();
+        else await CreateGuestPlayer();
     }
-    private async void CreateGuestPlayer()
+    private async Task CreateGuestPlayer()
     {
         
         await FirebaseDatabase.DefaultInstance.GetReference("users").Child(guestID)
@@ -53,12 +55,12 @@ public class FirebaseInit : MonoBehaviour
                 int num = rand.Next(100000);
                 User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
                 if (u == null)
-                    CreatePlayerInfo(guestID, "Guest" + num.ToString());
+                    CreatePlayerInfo(guestID, "Guest" + num.ToString(), "", "");
                 Debug.Log("create guest");
             });
         await LoadHighScoreOfCurrentPlayer();
     }
-    private async void CreateFacebookPlayer()
+    private async Task CreateFacebookPlayer()
     {
         
         await FirebaseDatabase.DefaultInstance.GetReference("users").Child(FacebookController.facebookID)
@@ -67,12 +69,12 @@ public class FirebaseInit : MonoBehaviour
                  DataSnapshot d = task.Result;
                  User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
                  if (u == null)
-                     CreatePlayerInfo(FacebookController.facebookID, FacebookController.facebookPlayerName);
+                     CreatePlayerInfo(FacebookController.facebookID, FacebookController.facebookPlayerName, "facebook", "http://graph.facebook.com/" + FacebookController.facebookID + "/picture");
              });
         await Task.Delay(100);
         await LoadHighScoreOfCurrentPlayer();
     }
-    private async void CreateGooglePlayer()
+    private async Task CreateGooglePlayer()
     {
         var googlePlayer = GoogleController.auth.CurrentUser;
         
@@ -82,7 +84,7 @@ public class FirebaseInit : MonoBehaviour
                  DataSnapshot d = task.Result;
                  User u = JsonUtility.FromJson<User>(d.GetRawJsonValue());
                  if (u == null)
-                     CreatePlayerInfo(googlePlayer.UserId, googlePlayer.DisplayName);
+                     CreatePlayerInfo(googlePlayer.UserId, googlePlayer.DisplayName, "google", googlePlayer.PhotoUrl.ToString());
              });
 
         await Task.Delay(100);
@@ -90,6 +92,7 @@ public class FirebaseInit : MonoBehaviour
     }
     public static async Task LoadHighScoreOfCurrentPlayer()
     {
+        loaded = false;
         int status = PlayerPrefs.GetInt("Google");
         await FirebaseDatabase.DefaultInstance.GetReference("users")
             .GetValueAsync().ContinueWith(task =>
@@ -101,7 +104,7 @@ public class FirebaseInit : MonoBehaviour
                 else if (task.IsCompleted)
                 {
                     DataSnapshot snapshot = task.Result;
-
+                    loaded = true;
                     foreach (var user in snapshot.Children)
                     {
                         User us = JsonUtility.FromJson<User>(user.GetRawJsonValue());
@@ -176,9 +179,9 @@ public class FirebaseInit : MonoBehaviour
         else if(PlayerPrefs.GetInt("Google") == 1) reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("userScore").SetValueAsync(score);
         else reference.Child("users").Child(guestID).Child("userScore").SetValueAsync(score);
     }
-    public static void CreatePlayerInfo(string id, string name)
+    public static void CreatePlayerInfo(string id, string name, string email, string profileURL)
     {
-        playerInfo = new User(name, "email@gmail.com", 0, id);
+        playerInfo = new User(id, name, email, 0,  profileURL);
         string json = JsonUtility.ToJson(playerInfo);
         reference.Child("users").Child(id).SetRawJsonValueAsync(json);
     }

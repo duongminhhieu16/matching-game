@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.Android;
 
 public class FacebookController : MonoBehaviour
 {
@@ -61,6 +62,7 @@ public class FacebookController : MonoBehaviour
         permissions.Add("public_profile");
         permissions.Add("email");
         permissions.Add("user_friends");
+        permissions.Add("user_photos");
         FB.LogInWithReadPermissions(permissions, AuthCallBack);
     }
     public void FBLogOut()

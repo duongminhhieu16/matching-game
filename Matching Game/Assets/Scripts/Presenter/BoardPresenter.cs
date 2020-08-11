@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class BoardPresenter : MonoBehaviour
 {
     public BoardController boardController;
+    public static bool isFilling = false;
     public static BoardPresenter Instance { get; private set; }
     private void Awake()
     {
@@ -51,12 +52,12 @@ public class BoardPresenter : MonoBehaviour
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Explode());
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.035f);
         }
         foreach (Vector2Int pos in boardController.board.matchedPos)
         {
             StartCoroutine(boardController.board.allTiles[pos.x, pos.y].GetComponent<TileController>().Exploding());
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.035f);
         }
     }
 
@@ -64,17 +65,23 @@ public class BoardPresenter : MonoBehaviour
     {
         StartCoroutine(boardController.board.allTiles[tile1Position.x, tile1Position.y].GetComponent<TileController>().Move(boardController.board.pos[tile2Position.x, tile2Position.y], boardController.board.pos[tile1Position.x, tile1Position.y]));
         StartCoroutine(boardController.board.allTiles[tile2Position.x, tile2Position.y].GetComponent<TileController>().Move(boardController.board.pos[tile1Position.x, tile1Position.y], boardController.board.pos[tile2Position.x, tile2Position.y]));
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(0.05f);
     }
     public IEnumerator DoSequence(Vector2Int tile1Position, Vector2Int tile2Position)
     {
-        yield return DoSwap(tile1Position, tile2Position);
-        do
+        if(isFilling == false)
         {
-            yield return DoExplode();
-            yield return Disappeared();
-            yield return FillHoles();
-        } while (boardController.CheckMatch());
+            isFilling = true;
+            yield return DoSwap(tile1Position, tile2Position);
+            do
+            {
+                yield return DoExplode();
+                yield return Disappeared();
+                yield return new WaitForSeconds(0.05f);
+                yield return FillHoles();
+            } while (boardController.CheckMatch());
+            isFilling = false;
+        }
     }
     private IEnumerator FillHoles()
     {
@@ -110,6 +117,6 @@ public class BoardPresenter : MonoBehaviour
                 }
             }
         }
-        yield return null ;
+        yield return null;
     }
 }

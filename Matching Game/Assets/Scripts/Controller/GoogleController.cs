@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Firebase;
 using Firebase.Auth;
 using System.Threading.Tasks;
 using Facebook.Unity;
@@ -9,8 +8,6 @@ using Google;
 using TMPro;
 using UnityEngine.Networking;
 using Firebase.Extensions;
-using System.Xml.XPath;
-using System.Runtime.InteropServices;
 
 public class GoogleController : MonoBehaviour
 {
@@ -38,7 +35,7 @@ public class GoogleController : MonoBehaviour
                 DialogSignedIn.SetActive(true);
                 DialogSignedOut.SetActive(false);
                 DisplayUserName(true, null);
-                DisplayUserProfilePic(true, null);
+                StartCoroutine(DisplayUserProfilePic(true, null));
             }
             else
             {
@@ -95,7 +92,8 @@ public class GoogleController : MonoBehaviour
                 
             }
             DisplayUserName(true, signIn.Result);
-            DisplayUserProfilePic(true, signIn.Result);
+            StartCoroutine(DisplayUserProfilePic(true, signIn.Result));
+            cnt++;
         });
         
         PlayerPrefs.SetInt("Google", 1);
@@ -109,6 +107,10 @@ public class GoogleController : MonoBehaviour
         GoogleSignIn.DefaultInstance.SignOut();
         PlayerPrefs.SetInt("Google", 0);
         cnt = 0;
+        TextMeshProUGUI userName = DialogUserName.GetComponent<TextMeshProUGUI>();
+        userName.text = "";
+        Image pic = DialogProfilePic.GetComponent<Image>();
+        pic.sprite = null;
     }
     public void DisplayUserName(bool completed, GoogleSignInUser result)
     {
@@ -116,7 +118,6 @@ public class GoogleController : MonoBehaviour
         if (cnt == 0)
         {
             user = result.DisplayName.ToString();
-            cnt++;
         }
         else
         {
@@ -135,7 +136,6 @@ public class GoogleController : MonoBehaviour
         if (cnt == 0)
         {
             url = result.ImageUrl.ToString();
-            cnt++;
         }
         else
         {
@@ -143,9 +143,10 @@ public class GoogleController : MonoBehaviour
         }
         if (completed)
         {
-            yield return DownloadImage(url.ToString());
+            yield return DownloadImage(url);
             Image pic = DialogProfilePic.GetComponent<Image>();
-            pic.sprite = Sprite.Create(profilePic, new Rect(0, 0, 100, 100), new Vector2());
+            pic.sprite = Sprite.Create(profilePic, new Rect(0, 0, profilePic.width, profilePic.height), new Vector2());
+            Debug.Log(url);
         }
     }
     IEnumerator DownloadImage(string MediaUrl)
@@ -156,8 +157,7 @@ public class GoogleController : MonoBehaviour
             Debug.Log(request.error);
         else
         {
-            profilePic = ((DownloadHandlerTexture)request.downloadHandler).texture;
+            profilePic = DownloadHandlerTexture.GetContent(request);
         }
-
     }
 }
