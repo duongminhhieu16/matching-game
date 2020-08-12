@@ -7,4 +7,5 @@ public class ScoreData
     public int Score;
     public int Goal;
     public int HighScore;
+    public static int level = 1;
 }

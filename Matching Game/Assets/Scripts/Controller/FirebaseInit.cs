@@ -11,7 +11,6 @@ public class FirebaseInit : MonoBehaviour
 {
     public static DatabaseReference reference;
     public static string guestID;
-    public static int highscoreOfUser;
     public static User playerInfo;
     public static bool loaded = false;
     public static List<User> users = new List<User>();
@@ -33,8 +32,7 @@ public class FirebaseInit : MonoBehaviour
             guestID = SystemInfo.deviceUniqueIdentifier;
         }
         GoogleController.auth = FirebaseAuth.DefaultInstance;
-        await LoadHighScoreOfCurrentPlayer();
-        
+        await LoadDataOfCurrentPlayer();
     }
     public static FirebaseInit firebaseInit { get; private set; }
     
@@ -58,7 +56,7 @@ public class FirebaseInit : MonoBehaviour
                     CreatePlayerInfo(guestID, "Guest" + num.ToString(), "", "");
                 Debug.Log("create guest");
             });
-        await LoadHighScoreOfCurrentPlayer();
+        await LoadDataOfCurrentPlayer();
     }
     private async Task CreateFacebookPlayer()
     {
@@ -72,7 +70,7 @@ public class FirebaseInit : MonoBehaviour
                      CreatePlayerInfo(FacebookController.facebookID, FacebookController.facebookPlayerName, "facebook", "http://graph.facebook.com/" + FacebookController.facebookID + "/picture");
              });
         await Task.Delay(100);
-        await LoadHighScoreOfCurrentPlayer();
+        await LoadDataOfCurrentPlayer();
     }
     private async Task CreateGooglePlayer()
     {
@@ -88,9 +86,9 @@ public class FirebaseInit : MonoBehaviour
              });
 
         await Task.Delay(100);
-        await LoadHighScoreOfCurrentPlayer();
+        await LoadDataOfCurrentPlayer();
     }
-    public static async Task LoadHighScoreOfCurrentPlayer()
+    public static async Task LoadDataOfCurrentPlayer()
     {
         loaded = false;
         int status = PlayerPrefs.GetInt("Google");
@@ -113,7 +111,6 @@ public class FirebaseInit : MonoBehaviour
                             if (FacebookController.facebookID == us.id)
                             {
                                 playerInfo = us;
-                                highscoreOfUser = us.userScore;
                             }
                         }
                         else if(status == 1)
@@ -121,7 +118,6 @@ public class FirebaseInit : MonoBehaviour
                             if (GoogleController.auth.CurrentUser.UserId == us.id)
                             {
                                 playerInfo = us;
-                                highscoreOfUser = us.userScore;
                             }
                         }
                         else
@@ -129,13 +125,12 @@ public class FirebaseInit : MonoBehaviour
                             if (guestID == us.id)
                             {
                                 playerInfo = us;
-                                highscoreOfUser = us.userScore;
                             }
                         }
                     }
                 }
             });
-        PlayerPrefs.SetInt("highScore", highscoreOfUser);
+        PlayerPrefs.SetInt("highScore", playerInfo.userScore);
     }
     public static async Task LoadHighestScoreUsersInfo(int user_num)
     {
@@ -172,7 +167,30 @@ public class FirebaseInit : MonoBehaviour
         }
         // Do something with the data in args.Snapshot
     }
-
+    public static void UpdateCurrentStatus(int currentScore, int currentLevel)
+    {
+        if (FB.IsLoggedIn)
+        {
+            reference.Child("users").Child(FacebookController.facebookID).Child("currentScore").SetValueAsync(currentScore);
+            reference.Child("users").Child(FacebookController.facebookID).Child("currentLevel").SetValueAsync(currentLevel);
+        }
+        else if (PlayerPrefs.GetInt("Google") == 1)
+        {
+            reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("currentScore").SetValueAsync(currentScore);
+            reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("currentLevel").SetValueAsync(currentLevel);
+        }
+        else
+        {
+            reference.Child("users").Child(guestID).Child("currentScore").SetValueAsync(currentScore);
+            reference.Child("users").Child(guestID).Child("currentLevel").SetValueAsync(currentLevel);
+        }
+    }
+    public static void UpdateLevel(int level)
+    {
+        if (FB.IsLoggedIn) reference.Child("users").Child(FacebookController.facebookID).Child("userHighestLevel").SetValueAsync(level);
+        else if (PlayerPrefs.GetInt("Google") == 1) reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("userHighestLevel").SetValueAsync(level);
+        else reference.Child("users").Child(guestID).Child("userHighestLevel").SetValueAsync(level);
+    }
     public static void UpdateScore(int score)
     {
         if (FB.IsLoggedIn) reference.Child("users").Child(FacebookController.facebookID).Child("userScore").SetValueAsync(score);
@@ -181,7 +199,7 @@ public class FirebaseInit : MonoBehaviour
     }
     public static void CreatePlayerInfo(string id, string name, string email, string profileURL)
     {
-        playerInfo = new User(id, name, email, 0,  profileURL);
+        playerInfo = new User(id, name, email, 0,  profileURL, 1, 1, 0);
         string json = JsonUtility.ToJson(playerInfo);
         reference.Child("users").Child(id).SetRawJsonValueAsync(json);
     }

@@ -28,7 +28,6 @@ public class FacebookController : MonoBehaviour
         {
             HandleFBMenus(FB.IsLoggedIn);
         }
-        Debug.Log("asdasdaasdasdasda");
     }
     public static FacebookController facebookController { get; private set; }
 

@@ -5,29 +5,34 @@ using UnityEngine.SocialPlatforms.Impl;
 public class ScoreController : MonoBehaviour
 {
     public ScoreData scoreData = new ScoreData();
-    // Start is called before the first frame update
+    private void Awake()
+    {
+        scoreData.NumMoves = scoreData.startingMoves;
+        PlayerPrefs.SetInt("numMoves", scoreData.startingMoves++);
+        scoreData.Goal += 100 + (ScoreData.level-1)*10;
+        PlayerPrefs.SetInt("goal", scoreData.Goal);
+        scoreData.HighScore = PlayerPrefs.GetInt("highScore");
+    }
     public void UpdateScoreToDatabase()
     {
-        if (scoreData.Score > FirebaseInit.highscoreOfUser)
+        if (scoreData.Score > FirebaseInit.playerInfo.userScore)
         {
-            FirebaseInit.highscoreOfUser = scoreData.Score;
+            FirebaseInit.playerInfo.userScore = scoreData.Score;
             FirebaseInit.UpdateScore(scoreData.Score);
         }
         
-        PlayerPrefs.SetInt("highScore", FirebaseInit.highscoreOfUser);
+        PlayerPrefs.SetInt("highScore", FirebaseInit.playerInfo.userScore);
     }
     public void CheckIfGameEnd()
     {
         bool win = PlayerPrefs.GetInt("win") > 1;
         if (win)
         {
-            Debug.Log("YOU WIN!!!");
             PlayerPrefs.SetInt("score", scoreData.Score);
             SceneManager.LoadScene(2);
         }
         else
         {
-            Debug.Log("YOU LOSE!!!!!!!!!!!!!!!!!!!!!!");
             PlayerPrefs.SetInt("score", 0);
             SceneManager.LoadScene(3);
         }

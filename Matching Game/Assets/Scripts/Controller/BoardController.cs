@@ -17,8 +17,7 @@ public class BoardController : MonoBehaviour
         board.allTiles = new GameObject[board.dimension, board.dimension];
         board.matchedTiles = new HashSet<SpriteRenderer>();
         board.matchedPos = new HashSet<Vector2Int>();
-        int level = PlayerPrefs.GetInt("win");
-        board.BLOCK += level;
+        board.BLOCK += ScoreData.level;
         do
         {
             if (!possibleMove)

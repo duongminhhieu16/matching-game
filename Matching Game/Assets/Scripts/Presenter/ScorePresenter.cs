@@ -1,65 +1,43 @@
 ﻿using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
 using UnityEngine.SocialPlatforms.Impl;
-using Firebase;
-using Firebase.Database;
-using Firebase.Unity.Editor;
+
 public class ScorePresenter : MonoBehaviour
 {
     public TextMeshProUGUI movesText;
     public TextMeshProUGUI scoreText;
     public TextMeshProUGUI goalText;
     public TextMeshProUGUI highscoreText;
+    public TextMeshProUGUI levelText;
     public ScoreController scoreController;
+    private int currentLevel;
+    private int _win;
     private void Awake()
     {
-        int level = PlayerPrefs.GetInt("win");
-        if (level != 1) scoreController.scoreData.Score = PlayerPrefs.GetInt("score");
-        else scoreController.scoreData.Score = 0;
+        _win = PlayerPrefs.GetInt("win");
+        
+        levelText.text = "Level " + ScoreData.level;
+        scoreController.scoreData.Score = PlayerPrefs.GetInt("score");
 
+        /*scoreController.scoreData.Score = PlayerPrefs.GetInt("score");
         scoreController.scoreData.NumMoves = scoreController.scoreData.startingMoves;
         PlayerPrefs.SetInt("numMoves", scoreController.scoreData.startingMoves);
-        scoreController.scoreData.Goal = level*100;
+        scoreController.scoreData.Goal = ScoreData.level * 30;
         PlayerPrefs.SetInt("goal", scoreController.scoreData.Goal);
-        scoreController.scoreData.HighScore = PlayerPrefs.GetInt("highScore");
+        scoreController.scoreData.HighScore = PlayerPrefs.GetInt("highScore");*/
+
     }
+
     private void OnEnable()
     {
         
         PlayerPrefs.SetInt("score", scoreController.scoreData.Score);
-        PlayerPrefs.SetInt("win", PlayerPrefs.GetInt("win"));
+        PlayerPrefs.SetInt("win", ScoreData.level);
         
         //if (nextLevel) PlayerPrefs.SetInt("score", score);
         //else PlayerPrefs.SetInt("score", 0);
     }
-    private void Update()
-    {
-        if (scoreController.scoreData.Score > scoreController.scoreData.HighScore)
-        {
-            PlayerPrefs.SetInt("highScore", scoreController.scoreData.Score);
-            scoreController.scoreData.HighScore = scoreController.scoreData.Score;
-        }
-        if (scoreController.scoreData.Score >= scoreController.scoreData.Goal)
-        {
-            PlayerPrefs.SetInt("win", PlayerPrefs.GetInt("win") + 1);
-            scoreController.CheckIfGameEnd();
-        }
-        else
-        {
-            if (scoreController.scoreData.NumMoves <= 0)
-            {
-                scoreController.scoreData.NumMoves = 0;
-                PlayerPrefs.SetInt("win", 1);
-                scoreController.CheckIfGameEnd();
-            }
-        }
-        ReadScore();
-        DisplayScore();
-        scoreController.UpdateScoreToDatabase();
-    }
-    
-    
     public void ReadScore()
     {
         scoreController.scoreData.Score = PlayerPrefs.GetInt("score");
@@ -74,4 +52,38 @@ public class ScorePresenter : MonoBehaviour
         goalText.text = scoreController.scoreData.Goal.ToString();
         highscoreText.text = scoreController.scoreData.HighScore.ToString();
     }
+    private async void Update()
+    {
+        if (scoreController.scoreData.Score > scoreController.scoreData.HighScore)
+        {
+            PlayerPrefs.SetInt("highScore", scoreController.scoreData.Score);
+            scoreController.scoreData.HighScore = scoreController.scoreData.Score;
+        }
+        if (scoreController.scoreData.Score >= scoreController.scoreData.Goal)
+        {
+            currentLevel = ScoreData.level;
+            if(ScoreData.level+1 > FirebaseInit.playerInfo.userHighestLevel) FirebaseInit.UpdateLevel(ScoreData.level+1);
+            PlayerPrefs.SetInt("win", _win + 1);
+            await Task.Delay(300);
+            scoreController.CheckIfGameEnd();
+        }
+        else
+        {
+            if (scoreController.scoreData.NumMoves <= 0)
+            {
+                scoreController.scoreData.NumMoves = 0;
+                ScoreData.level = 1;
+                PlayerPrefs.SetInt("win", 1);
+                _win = 1;
+                scoreController.CheckIfGameEnd();
+            }
+        }
+        ReadScore();
+        DisplayScore();
+        scoreController.UpdateScoreToDatabase();
+        FirebaseInit.UpdateCurrentStatus(scoreController.scoreData.Score, currentLevel);
+    }
+    
+    
+    
 }

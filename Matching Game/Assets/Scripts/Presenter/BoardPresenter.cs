@@ -1,13 +1,12 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 using UnityEngine.SceneManagement;
 
 public class BoardPresenter : MonoBehaviour
 {
     public BoardController boardController;
-    public static bool isFilling = false;
+    public static bool isFilling;
+    public static bool isPaused;
     public static BoardPresenter Instance { get; private set; }
     private void Awake()
     {
@@ -16,27 +15,31 @@ public class BoardPresenter : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        isFilling = false;
+        isPaused = false;
         boardController.SetUpBoard();
     }
-    public void DestroyCombo(Vector2Int tile1Position, Vector2Int tile2Position)
+    public IEnumerator DestroyCombo(Vector2Int tile1Position, Vector2Int tile2Position)
     {
         bool changesOccurs = boardController.CheckIfChanged(tile1Position, tile2Position);
         if (changesOccurs)
         {
             boardController.SwapTiles(tile1Position, tile2Position);
-            StartCoroutine(DoSequence(tile1Position, tile2Position));
+            yield return DoSequence(tile1Position, tile2Position);
             int numMoves = PlayerPrefs.GetInt("numMoves") - 1;
 
             PlayerPrefs.SetInt("numMoves", numMoves);
         }
+    }
+    public IEnumerator CheckMove()
+    {
         if (!boardController.CheckOnePossibleMatchAtleast())
         {
             Debug.Log("Shuffle");
             SceneManager.LoadScene(1);
         }
-
+        yield return new WaitForEndOfFrame();
     }
-
     private IEnumerator Disappeared()
     {
         foreach (SpriteRenderer renderer in boardController.board.matchedTiles)
@@ -67,9 +70,14 @@ public class BoardPresenter : MonoBehaviour
         StartCoroutine(boardController.board.allTiles[tile2Position.x, tile2Position.y].GetComponent<TileController>().Move(boardController.board.pos[tile1Position.x, tile1Position.y], boardController.board.pos[tile2Position.x, tile2Position.y]));
         yield return new WaitForSeconds(0.05f);
     }
+    public void Pause()
+    {
+        if (!isPaused) isPaused = true;
+        else isPaused = false;
+    }
     public IEnumerator DoSequence(Vector2Int tile1Position, Vector2Int tile2Position)
     {
-        if(isFilling == false)
+        if (isFilling == false)
         {
             isFilling = true;
             yield return DoSwap(tile1Position, tile2Position);
@@ -80,6 +88,7 @@ public class BoardPresenter : MonoBehaviour
                 yield return new WaitForSeconds(0.05f);
                 yield return FillHoles();
             } while (boardController.CheckMatch());
+            yield return CheckMove();
             isFilling = false;
         }
     }

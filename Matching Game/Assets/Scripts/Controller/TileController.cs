@@ -1,10 +1,9 @@
-﻿using DG.Tweening.Core;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 public class TileController : MonoBehaviour
 {
     
-    private static TileController selected;
+    public static TileController selected;
     private SpriteRenderer _renderer;
     private Vector2Int position;
     private float speed = 0.2f;
@@ -13,6 +12,8 @@ public class TileController : MonoBehaviour
     private Vector3 originalPos = new Vector3();
     private Vector3 changedPos = new Vector3();
     private BoxCollider2D boxCollider;
+    Vector2 deltaTouchPos = new Vector2(0, 0);
+    Vector2 currentTouchPos = new Vector2();
     SoundManager sm;
     // Start is called before the first frame update
 
@@ -86,7 +87,7 @@ public class TileController : MonoBehaviour
         }
     }
 
-    private void CheckTile()
+    /*private void OnMouseDown()
     {
         if (_renderer.sprite == BoardPresenter.Instance.boardController.board.sprites[5]) return;
         else
@@ -100,11 +101,12 @@ public class TileController : MonoBehaviour
                     selected = null;
                     return;
                 }
-                if (Vector2Int.Distance(selected.position, position) == 1)
+                if (Vector2.Distance(position, selected.position) == 1)
                 {
-                    BoardPresenter.Instance.DestroyCombo(position, selected.position);
+                    StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, position));
                     selected.Unselect();
                     selected = null;
+                    sm.PlaySound(SoundType.TypeSelect);
                 }
                 else
                 {
@@ -113,6 +115,7 @@ public class TileController : MonoBehaviour
                     selected = this;
                     Select();
                 }
+                
             }
             else
             {
@@ -121,46 +124,54 @@ public class TileController : MonoBehaviour
                 Select();
             }
         }
-    }
+    }*/
     private void Update()
     {
         
         if (Input.touchCount > 0)
         {
             Touch t1 = Input.GetTouch(0);
+            
             Vector3 wp = Camera.main.ScreenToWorldPoint(t1.position); 
             if (t1.phase == TouchPhase.Began && boxCollider.OverlapPoint(wp))
             {
-                CheckTile();
+                if (_renderer.sprite == BoardController.Instance.board.sprites[5]) return;
+                Select();
+                selected = this;
+                currentTouchPos = t1.position;
             }
             else if(t1.phase == TouchPhase.Moved)
             {
-                Vector2 deltaPos = t1.deltaPosition;
-                Debug.Log(t1.position);
-                if(deltaPos.y > 0)
+                deltaTouchPos = t1.position - currentTouchPos;
+                currentTouchPos = t1.position;
+            }
+            else if(t1.phase == TouchPhase.Ended)
+            {
+                if (deltaTouchPos.y > 0)
                 {
-                    if (deltaPos.x > deltaPos.y) BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(1, 0));
+                    if (deltaTouchPos.x > deltaTouchPos.y) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(1, 0)));
                     else
                     {
-                        if(deltaPos.x > 0 || deltaPos.x < 0 && -deltaPos.x < deltaPos.y) BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(0, 1));
-                        else if(deltaPos.x < 0 && -deltaPos.x > deltaPos.y) BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(-1, 0));
-
+                        if (deltaTouchPos.x > 0 || deltaTouchPos.x <= 0 && -deltaTouchPos.x < deltaTouchPos.y) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(0, 1)));
+                        else if (deltaTouchPos.x <= 0 && -deltaTouchPos.x > deltaTouchPos.y) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(-1, 0)));
                     }
                 }
                 else
                 {
-                    if (deltaPos.x > -deltaPos.y && deltaPos.x > 0) BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(1, 0));
-                    else if(deltaPos.x < 0)
+                    if (deltaTouchPos.x > -deltaTouchPos.y && deltaTouchPos.x >= 0) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(1, 0)));
+                    else if (deltaTouchPos.x < 0)
                     {
-                        if(deltaPos.x < deltaPos.y) BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(-1, 0));
-                        else BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(0, -1));
+                        if (deltaTouchPos.x < deltaTouchPos.y) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(-1, 0)));
+                        else StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(0, -1)));
                     }
+                    else if(deltaTouchPos.x >= 0 && deltaTouchPos.x < - deltaTouchPos.y) StartCoroutine(BoardPresenter.Instance.DestroyCombo(selected.position, selected.position + new Vector2Int(0, -1)));
                 }
-                selected = null;
+                
                 selected.Unselect();
+                selected = null;
                 sm.PlaySound(SoundType.TypeSelect);
             }
-            if (t1.phase == TouchPhase.Stationary) return;
+            else if (t1.phase == TouchPhase.Stationary) return;
         }
     }
 }   
