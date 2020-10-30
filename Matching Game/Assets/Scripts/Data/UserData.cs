@@ -12,12 +12,13 @@ public class User
     public int userHighestLevel;
     public int currentLevel;
     public int currentScore;
+    public int currentNumMoves;
     public User()
     {
         userScore = 0;
     }
 
-    public User(string id, string userName, string email, int score, string profileURL, int level, int currentLevel, int currentScore)
+    public User(string id, string userName, string email, int score, string profileURL, int level, int currentLevel, int currentScore, int currentNumMoves)
     {
         this.userName = userName;
         this.email = email;
@@ -27,6 +28,7 @@ public class User
         userHighestLevel = level;
         this.currentLevel = currentLevel;
         this.currentScore = currentScore;
+        this.currentNumMoves = currentNumMoves;
     }
 
     public void LogPrint()

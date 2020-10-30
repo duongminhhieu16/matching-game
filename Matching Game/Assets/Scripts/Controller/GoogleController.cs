@@ -121,7 +121,7 @@ public class GoogleController : MonoBehaviour
         }
         else
         {
-            user = auth.CurrentUser.DisplayName.ToString();
+            user = FirebaseInit.playerInfo.userName;
         }
         if (completed)
         {
@@ -136,10 +136,11 @@ public class GoogleController : MonoBehaviour
         if (cnt == 0)
         {
             url = result.ImageUrl.ToString();
+            
         }
         else
         {
-            url = auth.CurrentUser.PhotoUrl.ToString();
+            url = FirebaseInit.playerInfo.profileURL;
         }
         if (completed)
         {

@@ -1,8 +1,8 @@
 ﻿
 public class ScoreData
 {
-    public int startingMoves = 30;
-    public int remainingMoves;
+    public static int startingMoves = 30;
+    public static int currentNumMoves;
     public int NumMoves;
     public int Score;
     public int Goal;

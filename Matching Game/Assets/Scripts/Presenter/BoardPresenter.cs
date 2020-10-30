@@ -27,7 +27,7 @@ public class BoardPresenter : MonoBehaviour
             boardController.SwapTiles(tile1Position, tile2Position);
             yield return DoSequence(tile1Position, tile2Position);
             int numMoves = PlayerPrefs.GetInt("numMoves") - 1;
-
+            ScoreData.currentNumMoves = numMoves;
             PlayerPrefs.SetInt("numMoves", numMoves);
         }
     }

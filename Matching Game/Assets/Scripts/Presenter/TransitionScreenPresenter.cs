@@ -15,5 +15,7 @@ public class TransitionScreenPresenter : MonoBehaviour
     public void NextLevel()
     {
         ScoreData.level++;
+        ScoreData.startingMoves += ScoreData.level - 1;
+        PlayerPrefs.SetInt("numMoves", ScoreData.startingMoves);
     }
 }

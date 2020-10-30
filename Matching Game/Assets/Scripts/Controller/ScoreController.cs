@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class ScoreController : MonoBehaviour
 {
     public ScoreData scoreData = new ScoreData();
     private void Awake()
     {
-        scoreData.NumMoves = scoreData.startingMoves;
-        PlayerPrefs.SetInt("numMoves", scoreData.startingMoves++);
+        scoreData.NumMoves = ScoreData.currentNumMoves;
+        
         scoreData.Goal += 100 + (ScoreData.level-1)*10;
         PlayerPrefs.SetInt("goal", scoreData.Goal);
         scoreData.HighScore = PlayerPrefs.GetInt("highScore");

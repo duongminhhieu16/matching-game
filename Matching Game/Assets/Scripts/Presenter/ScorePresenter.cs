@@ -16,7 +16,7 @@ public class ScorePresenter : MonoBehaviour
     private void Awake()
     {
         _win = PlayerPrefs.GetInt("win");
-        
+        currentLevel = FirebaseInit.playerInfo.currentLevel;
         levelText.text = "Level " + ScoreData.level;
         scoreController.scoreData.Score = PlayerPrefs.GetInt("score");
 
@@ -61,7 +61,7 @@ public class ScorePresenter : MonoBehaviour
         }
         if (scoreController.scoreData.Score >= scoreController.scoreData.Goal)
         {
-            currentLevel = ScoreData.level;
+            currentLevel = ScoreData.level+1;
             if(ScoreData.level+1 > FirebaseInit.playerInfo.userHighestLevel) FirebaseInit.UpdateLevel(ScoreData.level+1);
             PlayerPrefs.SetInt("win", _win + 1);
             await Task.Delay(300);
@@ -81,9 +81,7 @@ public class ScorePresenter : MonoBehaviour
         ReadScore();
         DisplayScore();
         scoreController.UpdateScoreToDatabase();
-        FirebaseInit.UpdateCurrentStatus(scoreController.scoreData.Score, currentLevel);
+        FirebaseInit.UpdateCurrentStatus(scoreController.scoreData.Score, currentLevel, ScoreData.currentNumMoves);
     }
-    
-    
-    
+ 
 }

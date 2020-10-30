@@ -131,6 +131,11 @@ public class FirebaseInit : MonoBehaviour
                 }
             });
         PlayerPrefs.SetInt("highScore", playerInfo.userScore);
+        PlayerPrefs.SetInt("score", playerInfo.currentScore);
+        PlayerPrefs.SetInt("numMoves", playerInfo.currentNumMoves);
+        ScoreData.currentNumMoves = playerInfo.currentNumMoves;
+        ScoreData.level = FirebaseInit.playerInfo.currentLevel;
+        Debug.Log("score: " + PlayerPrefs.GetInt("score"));
     }
     public static async Task LoadHighestScoreUsersInfo(int user_num)
     {
@@ -167,22 +172,25 @@ public class FirebaseInit : MonoBehaviour
         }
         // Do something with the data in args.Snapshot
     }
-    public static void UpdateCurrentStatus(int currentScore, int currentLevel)
+    public static void UpdateCurrentStatus(int currentScore, int currentLevel, int currentNumMoves)
     {
         if (FB.IsLoggedIn)
         {
             reference.Child("users").Child(FacebookController.facebookID).Child("currentScore").SetValueAsync(currentScore);
             reference.Child("users").Child(FacebookController.facebookID).Child("currentLevel").SetValueAsync(currentLevel);
+            reference.Child("users").Child(FacebookController.facebookID).Child("currentNumMoves").SetValueAsync(currentNumMoves);
         }
         else if (PlayerPrefs.GetInt("Google") == 1)
         {
             reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("currentScore").SetValueAsync(currentScore);
             reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("currentLevel").SetValueAsync(currentLevel);
+            reference.Child("users").Child(GoogleController.auth.CurrentUser.UserId).Child("currentNumMoves").SetValueAsync(currentNumMoves);
         }
         else
         {
             reference.Child("users").Child(guestID).Child("currentScore").SetValueAsync(currentScore);
             reference.Child("users").Child(guestID).Child("currentLevel").SetValueAsync(currentLevel);
+            reference.Child("users").Child(guestID).Child("currentNumMoves").SetValueAsync(currentNumMoves);
         }
     }
     public static void UpdateLevel(int level)
@@ -199,7 +207,7 @@ public class FirebaseInit : MonoBehaviour
     }
     public static void CreatePlayerInfo(string id, string name, string email, string profileURL)
     {
-        playerInfo = new User(id, name, email, 0,  profileURL, 1, 1, 0);
+        playerInfo = new User(id, name, email, 0,  profileURL, 1, 1, 0, ScoreData.startingMoves);
         string json = JsonUtility.ToJson(playerInfo);
         reference.Child("users").Child(id).SetRawJsonValueAsync(json);
     }
