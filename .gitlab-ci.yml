@@ -5,6 +5,10 @@ stages:
 unit-test:
   stage: test
   script: echo 'Testing...'
+  tags:
+    - h
 unity-build:
   stage: build
   script: echo 'Building...'
+  tags:
+    - h
